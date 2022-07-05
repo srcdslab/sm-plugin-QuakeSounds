@@ -60,7 +60,6 @@ float g_fLastKillTime[MAXPLAYERS+1];
 Handle g_hShowText = INVALID_HANDLE, g_hSound = INVALID_HANDLE, g_hSoundPreset = INVALID_HANDLE;
 int g_iShowText[MAXPLAYERS + 1] = {0, ...}, g_iSound[MAXPLAYERS + 1] = {0, ...}, g_iSoundPreset[MAXPLAYERS + 1] = {0, ...};
 
-ConVar g_cvar_Version;
 ConVar g_cvar_Announce;
 ConVar g_cvar_Text;
 ConVar g_cvar_Sound;
@@ -84,7 +83,6 @@ public void OnPluginStart()
 {
 	LoadTranslations("plugin.quakesounds");
 
-	g_cvar_Version = CreateConVar("sm_quakesounds_version", PLUGIN_VERSION, "Version of currently loaded Quake Sounds plugin.", FCVAR_NOTIFY | FCVAR_DONTRECORD)
 	g_cvar_Announce = CreateConVar("sm_quakesounds_announce", "1", "Sets whether to announcement to clients as they join, 0=Disabled, 1=Enabled.", FCVAR_NONE, true, 0.0, true, 1.0)
 	g_cvar_Text = CreateConVar("sm_quakesounds_text", "1", "Default text display setting for new users, 0=Disabled, 1=Enabled.", FCVAR_NONE, true, 0.0, true, 1.0)
 	g_cvar_Sound = CreateConVar("sm_quakesounds_sound", "1", "Default sound setting for new users, 0=Disable 1=Enable.", FCVAR_NONE, true, 0.0, true, 255.0)
@@ -738,6 +736,7 @@ public Action Timer_Announce(Handle timer, any client)
 	{
 		PrintToChat(client, "%t", "announce message");
 	}
+	return Plugin_Continue;
 }
 
 // Plays round play sound depending on each players config and the text display
