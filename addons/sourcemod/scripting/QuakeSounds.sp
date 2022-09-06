@@ -2,7 +2,7 @@
 #include <sdktools>
 #include <clientprefs>
 
-#define PLUGIN_VERSION				"4.0"
+#define PLUGIN_VERSION				"4.0.1"
 
 #define ANNOUNCE_DELAY				30.0
 #define JOIN_DELAY					2.0
@@ -787,7 +787,7 @@ public Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 			g_iConsecutiveKills[attackerClient] = 0
 			for(int i = 1; i <= MaxClients; i++)
 			{
-				if(IsClientInGame(i) && !IsFakeClient(i) &&  0)
+				if(IsClientInGame(i) && !IsFakeClient(i) && g_iSound[i])
 				{
 					if(!StrEqual(selfkillSound[g_iSoundPreset[i]],""))
 					{
