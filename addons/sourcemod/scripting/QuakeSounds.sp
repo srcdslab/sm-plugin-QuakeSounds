@@ -2,8 +2,6 @@
 #include <sdktools>
 #include <clientprefs>
 
-#define PLUGIN_VERSION				"4.0.1"
-
 #define ANNOUNCE_DELAY				30.0
 #define JOIN_DELAY					2.0
 
@@ -17,7 +15,7 @@ public Plugin myinfo = {
 	name = "Quake Sounds",
 	author = "Spartan_C001, maxime1907",
 	description = "Plays sounds based on events that happen in game.",
-	version = PLUGIN_VERSION,
+	version = "4.0.1",
 	url = "http://steamcommunity.com/id/spartan_c001/",
 }
 
