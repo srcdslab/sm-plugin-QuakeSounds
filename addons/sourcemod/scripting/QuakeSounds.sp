@@ -15,7 +15,7 @@ public Plugin myinfo = {
 	name = "Quake Sounds",
 	author = "Spartan_C001, maxime1907",
 	description = "Plays sounds based on events that happen in game.",
-	version = "4.0.1",
+	version = "4.0.2",
 	url = "http://steamcommunity.com/id/spartan_c001/",
 }
 
@@ -872,9 +872,9 @@ public Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 
 			int customkill;
 			
-			char weapon[MAXPLAYERS+1];
+			char weapon[32];
 
-			GetEventString(event, "weapon", weapon, sizeof(MaxClients));
+			GetEventString(event, "weapon", weapon, sizeof(weapon));
 
 			if (g_evGameEngine == Engine_CSS || g_evGameEngine == Engine_CSGO)
 			{
