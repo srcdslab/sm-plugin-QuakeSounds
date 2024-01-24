@@ -957,7 +957,7 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 					if (g_iShowText[i] && iConsecutiveHeadshots < MAX_NUM_KILLS && ((iConsecutiveHSConfig & 8) || ((iConsecutiveHSConfig & 16) && attackerClient == i) || ((iConsecutiveHSConfig & 32) && victimClient == i)))
 					{
 						Format(sBuffer, 256, "headshot %i", iConsecutiveHeadshots);
-						PrintCenterText(i, "%t", "headshot", attackerName);
+						PrintCenterText(i, "%t", sBuffer, attackerName);
 					}
 				}
 
@@ -987,7 +987,7 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 					if (g_iShowText[i] && g_iComboScore[attackerClient] < MAX_NUM_KILLS && ((iComboConfig & 8) || ((iComboConfig & 16) && attackerClient == i) || ((iComboConfig & 32) && victimClient == i)))
 					{
 						Format(sBuffer, 256, "combo %i", g_iComboScore[attackerClient]);
-						PrintCenterText(i, "%t", "combo", attackerName);
+						PrintCenterText(i, "%t", sBuffer, attackerName);
 					}
 				}
 
