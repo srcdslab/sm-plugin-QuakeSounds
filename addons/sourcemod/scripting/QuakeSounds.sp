@@ -18,7 +18,7 @@ public Plugin myinfo = {
 	name = "Quake Sounds",
 	author = "Spartan_C001, maxime1907, .Rushaway",
 	description = "Plays sounds based on events that happen in game.",
-	version = "4.1",
+	version = "4.1.0",
 	url = "http://steamcommunity.com/id/spartan_c001/",
 }
 
@@ -386,13 +386,13 @@ public void LoadSet(char[] setFile, int setNum)
 			{
 				do
 				{
-					KvGetSectionName(SetFileKV, sBuffer, PLATFORM_MAX_PATH);
+					KvGetSectionName(SetFileKV, sBuffer, sizeof(sBuffer));
 					int killNum = StringToInt(sBuffer);
 					if (killNum >= 0)
 					{
-						KvGetString(SetFileKV, "sound", headshotSound[setNum][killNum], PLATFORM_MAX_PATH);
+						KvGetString(SetFileKV, "sound", headshotSound[setNum][killNum], sizeof(sBuffer));
 						headshotConfig[setNum][killNum] = KvGetNum(SetFileKV, "config", 9);
-						Format(sBuffer, PLATFORM_MAX_PATH, "sound/%s", headshotSound[setNum][killNum]);
+						Format(sBuffer, sizeof(sBuffer), "sound/%s", headshotSound[setNum][killNum]);
 						if (FileExists(sBuffer, true))
 						{
 							PrecacheSoundCustom(headshotSound[setNum][killNum], PLATFORM_MAX_PATH);
@@ -426,9 +426,9 @@ public void LoadSet(char[] setFile, int setNum)
 			}
 			else
 			{
-				KvGetString(SetFileKV, "sound", grenadeSound[setNum], PLATFORM_MAX_PATH);
+				KvGetString(SetFileKV, "sound", grenadeSound[setNum], sizeof(sBuffer));
 				grenadeConfig[setNum] = KvGetNum(SetFileKV, "config", 9);
-				Format(sBuffer, PLATFORM_MAX_PATH, "sound/%s", grenadeSound[setNum]);
+				Format(sBuffer, sizeof(sBuffer), "sound/%s", grenadeSound[setNum]);
 				if (FileExists(sBuffer, true))
 				{
 					PrecacheSoundCustom(grenadeSound[setNum], PLATFORM_MAX_PATH);
@@ -455,9 +455,9 @@ public void LoadSet(char[] setFile, int setNum)
 			}
 			else
 			{
-				KvGetString(SetFileKV, "sound", selfkillSound[setNum], PLATFORM_MAX_PATH);
+				KvGetString(SetFileKV, "sound", selfkillSound[setNum], sizeof(sBuffer));
 				selfkillConfig[setNum] = KvGetNum(SetFileKV, "config", 9);
-				Format(sBuffer, PLATFORM_MAX_PATH, "sound/%s", selfkillSound[setNum]);
+				Format(sBuffer, sizeof(sBuffer), "sound/%s", selfkillSound[setNum]);
 				if (FileExists(sBuffer, true))
 				{
 					PrecacheSoundCustom(selfkillSound[setNum], PLATFORM_MAX_PATH);
@@ -484,9 +484,9 @@ public void LoadSet(char[] setFile, int setNum)
 			}
 			else
 			{
-				KvGetString(SetFileKV, "sound", roundplaySound[setNum], PLATFORM_MAX_PATH);
+				KvGetString(SetFileKV, "sound", roundplaySound[setNum], sizeof(sBuffer));
 				roundplayConfig[setNum] = KvGetNum(SetFileKV, "config", 9);
-				Format(sBuffer, PLATFORM_MAX_PATH, "sound/%s", roundplaySound[setNum]);
+				Format(sBuffer, sizeof(sBuffer), "sound/%s", roundplaySound[setNum]);
 				if (FileExists(sBuffer, true))
 				{
 					PrecacheSoundCustom(roundplaySound[setNum], PLATFORM_MAX_PATH);
@@ -513,9 +513,9 @@ public void LoadSet(char[] setFile, int setNum)
 			}
 			else
 			{
-				KvGetString(SetFileKV, "sound", knifeSound[setNum], PLATFORM_MAX_PATH);
+				KvGetString(SetFileKV, "sound", knifeSound[setNum], sizeof(sBuffer));
 				knifeConfig[setNum] = KvGetNum(SetFileKV, "config", 9);
-				Format(sBuffer, PLATFORM_MAX_PATH, "sound/%s", knifeSound[setNum]);
+				Format(sBuffer, sizeof(sBuffer), "sound/%s", knifeSound[setNum]);
 				if (FileExists(sBuffer, true))
 				{
 					PrecacheSoundCustom(knifeSound[setNum], PLATFORM_MAX_PATH);
@@ -539,13 +539,13 @@ public void LoadSet(char[] setFile, int setNum)
 			{
 				do
 				{
-					KvGetSectionName(SetFileKV, sBuffer, PLATFORM_MAX_PATH);
+					KvGetSectionName(SetFileKV, sBuffer, sizeof(sBuffer));
 					int killNum = StringToInt(sBuffer);
 					if (killNum >= 0)
 					{
-						KvGetString(SetFileKV, "sound", killSound[setNum][killNum], PLATFORM_MAX_PATH);
+						KvGetString(SetFileKV, "sound", killSound[setNum][killNum], sizeof(sBuffer));
 						killConfig[setNum][killNum] = KvGetNum(SetFileKV, "config", 9);
-						Format(sBuffer, PLATFORM_MAX_PATH, "sound/%s", killSound[setNum][killNum]);
+						Format(sBuffer, sizeof(sBuffer), "sound/%s", killSound[setNum][killNum]);
 						if (FileExists(sBuffer, true))
 						{
 							PrecacheSoundCustom(killSound[setNum][killNum], PLATFORM_MAX_PATH);
@@ -579,12 +579,12 @@ public void LoadSet(char[] setFile, int setNum)
 			}
 			else
 			{
-				KvGetString(SetFileKV, "sound", firstbloodSound[setNum], PLATFORM_MAX_PATH);
+				KvGetString(SetFileKV, "sound", firstbloodSound[setNum], sizeof(sBuffer));
 				firstbloodConfig[setNum] = KvGetNum(SetFileKV, "config", 9);
-				Format(sBuffer, PLATFORM_MAX_PATH, "sound/%s", firstbloodSound[setNum]);
+				Format(sBuffer, sizeof(sBuffer), "sound/%s", firstbloodSound[setNum]);
 				if (FileExists(sBuffer, true))
 				{
-					PrecacheSoundCustom(firstbloodSound[setNum], PLATFORM_MAX_PATH);
+					PrecacheSoundCustom(firstbloodSound[setNum], sizeof(sBuffer));
 					AddFileToDownloadsTable(sBuffer);
 				}
 				else
@@ -608,12 +608,12 @@ public void LoadSet(char[] setFile, int setNum)
 			}
 			else
 			{
-				KvGetString(SetFileKV, "sound", teamkillSound[setNum], PLATFORM_MAX_PATH);
+				KvGetString(SetFileKV, "sound", teamkillSound[setNum], sizeof(sBuffer));
 				teamkillConfig[setNum] = KvGetNum(SetFileKV, "config", 9);
-				Format(sBuffer, PLATFORM_MAX_PATH, "sound/%s", teamkillSound[setNum]);
+				Format(sBuffer, sizeof(sBuffer), "sound/%s", teamkillSound[setNum]);
 				if (FileExists(sBuffer, true))
 				{
-					PrecacheSoundCustom(teamkillSound[setNum], PLATFORM_MAX_PATH);
+					PrecacheSoundCustom(teamkillSound[setNum], sizeof(sBuffer));
 					AddFileToDownloadsTable(sBuffer);
 				}
 				else
@@ -634,16 +634,16 @@ public void LoadSet(char[] setFile, int setNum)
 			{
 				do
 				{
-					KvGetSectionName(SetFileKV, sBuffer, PLATFORM_MAX_PATH);
+					KvGetSectionName(SetFileKV, sBuffer, sizeof(sBuffer));
 					int killNum = StringToInt(sBuffer);
 					if (killNum >= 0)
 					{
-						KvGetString(SetFileKV, "sound", comboSound[setNum][killNum], PLATFORM_MAX_PATH);
+						KvGetString(SetFileKV, "sound", comboSound[setNum][killNum], sizeof(sBuffer));
 						comboConfig[setNum][killNum] = KvGetNum(SetFileKV, "config", 9);
-						Format(sBuffer, PLATFORM_MAX_PATH, "sound/%s", comboSound[setNum][killNum]);
+						Format(sBuffer, sizeof(sBuffer), "sound/%s", comboSound[setNum][killNum]);
 						if (FileExists(sBuffer, true))
 						{
-							PrecacheSoundCustom(comboSound[setNum][killNum], PLATFORM_MAX_PATH);
+							PrecacheSoundCustom(comboSound[setNum][killNum], sizeof(sBuffer));
 							AddFileToDownloadsTable(sBuffer);
 						}
 						else
@@ -674,9 +674,9 @@ public void LoadSet(char[] setFile, int setNum)
 			}
 			else
 			{
-				KvGetString(SetFileKV, "sound", joinSound[setNum], PLATFORM_MAX_PATH);
+				KvGetString(SetFileKV, "sound", joinSound[setNum], sizeof(sBuffer));
 				joinConfig[setNum] = KvGetNum(SetFileKV, "config", 9);
-				Format(sBuffer, PLATFORM_MAX_PATH, "sound/%s", joinSound[setNum]);
+				Format(sBuffer, sizeof(sBuffer), "sound/%s", joinSound[setNum]);
 				if (FileExists(sBuffer, true))
 				{
 					PrecacheSoundCustom(joinSound[setNum], PLATFORM_MAX_PATH);
@@ -956,7 +956,7 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 
 					if (g_iShowText[i] && iConsecutiveHeadshots < MAX_NUM_KILLS && ((iConsecutiveHSConfig & 8) || ((iConsecutiveHSConfig & 16) && attackerClient == i) || ((iConsecutiveHSConfig & 32) && victimClient == i)))
 					{
-						Format(sBuffer, 256, "headshot %i", iConsecutiveHeadshots);
+						Format(sBuffer, sizeof(sBuffer), "headshot %i", iConsecutiveHeadshots);
 						PrintCenterText(i, "%t", sBuffer, attackerName);
 					}
 				}
@@ -986,7 +986,7 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 
 					if (g_iShowText[i] && g_iComboScore[attackerClient] < MAX_NUM_KILLS && ((iComboConfig & 8) || ((iComboConfig & 16) && attackerClient == i) || ((iComboConfig & 32) && victimClient == i)))
 					{
-						Format(sBuffer, 256, "combo %i", g_iComboScore[attackerClient]);
+						Format(sBuffer, sizeof(sBuffer), "combo %i", g_iComboScore[attackerClient]);
 						PrintCenterText(i, "%t", sBuffer, attackerName);
 					}
 				}
@@ -998,7 +998,7 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 
 					if (g_iShowText[i] && g_iConsecutiveKills[attackerClient] < MAX_NUM_KILLS && ((iKillConfig & 8) || ((iKillConfig & 16) && attackerClient == i) || ((iKillConfig & 32) && victimClient == i)))
 					{
-						Format(sBuffer, 256, "killsound %i", g_iConsecutiveKills[attackerClient]);
+						Format(sBuffer, sizeof(sBuffer), "killsound %i", g_iConsecutiveKills[attackerClient]);
 						PrintCenterText(i, "%t", sBuffer, attackerName);
 					}
 				}
