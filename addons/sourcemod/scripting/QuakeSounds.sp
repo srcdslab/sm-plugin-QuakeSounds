@@ -18,7 +18,7 @@ public Plugin myinfo = {
 	name = "Quake Sounds",
 	author = "Spartan_C001, maxime1907, .Rushaway",
 	description = "Plays sounds based on events that happen in game.",
-	version = "4.1.0",
+	version = "4.1.1",
 	url = "http://steamcommunity.com/id/spartan_c001/",
 }
 
@@ -913,7 +913,7 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 				int iConsecutiveKills = g_iConsecutiveKills[attackerClient];
 				int soundPreset = g_iSoundPreset[i];
 				int iFirstBConfig = firstbloodConfig[soundPreset];
-				int iHeadShotConfig = headshotConfig[soundPreset][0];
+				int iHeadShotConfig = headshotConfig[soundPreset][iConsecutiveKills];
 				int iConsecutiveHeadshots = g_iConsecutiveHeadshots[attackerClient];
 				int iConsecutiveHSConfig = headshotConfig[soundPreset][iConsecutiveHeadshots];
 				int iKnifeConfig = knifeConfig[soundPreset];
@@ -921,12 +921,11 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 				int iKillConfig = killConfig[soundPreset][iConsecutiveKills];
 				int iComboConfig = comboConfig[soundPreset][iComboScore];
 
-				char sFirstBSound[PLATFORM_MAX_PATH], sHeadShotSound[PLATFORM_MAX_PATH], sConsecutiveHSSound[PLATFORM_MAX_PATH], sComboSound[PLATFORM_MAX_PATH];
+				char sFirstBSound[PLATFORM_MAX_PATH], sHeadShotSound[PLATFORM_MAX_PATH], sComboSound[PLATFORM_MAX_PATH];
 				char sKnifeSound[PLATFORM_MAX_PATH], sGrenadeSound[PLATFORM_MAX_PATH], sKillSound[PLATFORM_MAX_PATH];
 				sFirstBSound = firstbloodSound[soundPreset];
-				sHeadShotSound = headshotSound[soundPreset][0];
-				sConsecutiveHSSound = headshotSound[soundPreset][iConsecutiveHeadshots];
-				sComboSound = comboSound[soundPreset][0];
+				sHeadShotSound = headshotSound[soundPreset][iConsecutiveHeadshots];
+				sComboSound = comboSound[soundPreset][iComboScore];
 				sKnifeSound = knifeSound[soundPreset];
 				sGrenadeSound = grenadeSound[soundPreset];
 				sKillSound = killSound[soundPreset][iConsecutiveKills];
@@ -951,8 +950,8 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 
 				else if (headshot && iConsecutiveHeadshots < MAX_NUM_KILLS && iConsecutiveHSConfig > 0)
 				{
-					if (strcmp(sConsecutiveHSSound, "", false) != 0 && (iConsecutiveHSConfig & 1) || ((iConsecutiveHSConfig & 2) && attackerClient == i) || ((iConsecutiveHSConfig & 4) && victimClient == i))
-						EmitSoundCustom(i, sConsecutiveHSSound, _, _, _, _, g_fVolume);
+					if (strcmp(sHeadShotSound, "", false) != 0 && (iConsecutiveHSConfig & 1) || ((iConsecutiveHSConfig & 2) && attackerClient == i) || ((iConsecutiveHSConfig & 4) && victimClient == i))
+						EmitSoundCustom(i, sHeadShotSound, _, _, _, _, g_fVolume);
 
 					if (g_iShowText[i] && iConsecutiveHeadshots < MAX_NUM_KILLS && ((iConsecutiveHSConfig & 8) || ((iConsecutiveHSConfig & 16) && attackerClient == i) || ((iConsecutiveHSConfig & 32) && victimClient == i)))
 					{
