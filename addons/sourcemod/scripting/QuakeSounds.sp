@@ -9,7 +9,7 @@
 #define JOIN_DELAY					2.0
 
 #define MAX_NUM_SETS				255
-#define MAX_NUM_KILLS				50
+#define MAX_NUM_KILLS				999
 
 #define PATH_CONFIG_QUAKE_SET		"configs/quake/sets.cfg"
 #define PATH_CONFIG_QUAKE_SOUNDS	"configs/quake/sets"
@@ -18,7 +18,7 @@ public Plugin myinfo = {
 	name = "Quake Sounds",
 	author = "Spartan_C001, maxime1907, .Rushaway",
 	description = "Plays sounds based on events that happen in game.",
-	version = "4.1.1",
+	version = "4.1.2",
 	url = "http://steamcommunity.com/id/spartan_c001/",
 }
 
