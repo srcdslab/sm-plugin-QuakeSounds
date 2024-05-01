@@ -21,7 +21,7 @@
 		"#format"	"{1:s}"
 		"en"		"{1} Hattrick"
 		"de"		"{1} Hattrick"
-		"fr"		"{1} Tour du chapeau"
+		"fr"		"Triplé de {1} !!"
 		"pt"		"{1} tem Habilidade com Cabeças"
 	}
 	"headshot 5"
@@ -85,7 +85,7 @@
 		"#format"	"{1:s}"
 		"en"		"{1} is Godlike"
 		"de"		"{1} gleicht einem Gott"
-		"fr"		"{1} ,Dieu est sur terre !!"
+		"fr"		"{1} est un Dieu sur terre !!"
 		"pt"		"{1} é como um DEUS!"
 	}
 	"killsound 20"
@@ -117,7 +117,7 @@
 		"#format"	"{1:s}"
 		"en"		"HOLY SHIT, {1} is a bad ass"
 		"de"		"Heilige Schei?�e, {1} ist wahnsinnig"
-		"fr"		"Incroyable, {1} ;quelle mauvais garçon"
+		"fr"		"Incroyable, {1} est un dur à cuire"
 		"pt"		"Puta Merda, {1} é muito foda!
 	}
 	"combo 2"
@@ -125,7 +125,7 @@
 		"#format"	"{1:s}"
 		"en"		"{1} just pulled off a Double Kill"
 		"de"		"{1} hat gerade zwei auf einmal niedergestreckt"
-		"fr"		"{1} vien dans tué 2 de suite"
+		"fr"		"{1} vient de tuer 2 personnes d'affilée"
 		"pt"		"{1} acabou de conseguir uma Morte Dupla"
 	}
 	"combo 3"
@@ -133,7 +133,7 @@
 		"#format"	"{1:s}"
 		"en"		"{1} just pulled off a Triple Kill"
 		"de"		"{1} hat gerade drei auf einem niedergestreckt"
-		"fr"		"{1} vien dans tué 3 de suite"
+		"fr"		"{1} vient de tuer 3 personnes d'affilée"
 		"pt"		"{1} acabou de conseguir uma Morte Tripla" 
 	}
 	"combo 4"
@@ -141,7 +141,7 @@
 		"#format"	"{1:s}"
 		"en"		"{1} just pulled off a Quadruple Combo"
 		"de"		"{1} hat gerade vier auf einmal niedergestreckt"
-		"fr"		"{1} vien de faire un Quadruple Combo"
+		"fr"		"{1} vient de faire un Quadruple Combo"
 		"pt"		"{1} acabou de conseguir uma Morte Quádrupla"
 	}
 	"combo 5"
@@ -165,7 +165,7 @@
 		"#format"	"{1:s},{2:s}"
 		"en"		"{1} detonated {2} with a grenade"
 		"de"		"{1} sprengte {2} mit einer Granate"
-		"fr"		"{1} explose {2} avec une grenade"
+		"fr"		"{1} a fait exploser {2} avec une grenade"
 		"pt"		"{1} detonou {2} com uma granada"
 	}
 	"selfkill"
@@ -173,7 +173,7 @@
 		"#format"	"{1:s}"
 		"en"		"{1} humiliated himself"
 		"de"		"{1} hat sich selbst erniedrigt"
-		"fr"		"{1} S�humilie lui-même"
+		"fr"		"{1} s'est humilié lui-même"
 		"pt"		"{1} se humilhou"
 	}
 	"round play"
@@ -188,7 +188,7 @@
 		"#format"	"{1:s},{2:s}"
 		"en"		"{2} was embarrassed with the knife by {1}"
 		"de"		"{2} wurde durch einen Messerkill von {1} blo?�gestellt"
-		"fr"		"{2} découpé par {1}"
+		"fr"		"{2} a été découpé par {1}"
 		"pt"		"{2} foi humilhado com uma faca por {1}"
 	}
 	"teamkill"
@@ -196,7 +196,7 @@
 		"#format"	"{1:s},{2:s}"
 		"en"		"{1} just victimized his team teammate {2}"
 		"de"		"{1} hat gerade seinen Teamkamerad {2} niedergestreckt"
-		"fr"		"{1} a tué son pote {2}"
+		"fr"		"{1} a tué son coéquipier {2}"
 		"pt"		"{1} acabou de matar o amigo {2}"
 	}
 	"announce message"
