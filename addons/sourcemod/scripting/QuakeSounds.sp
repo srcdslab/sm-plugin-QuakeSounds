@@ -18,7 +18,7 @@ public Plugin myinfo = {
 	name = "Quake Sounds",
 	author = "Spartan_C001, maxime1907, .Rushaway",
 	description = "Plays sounds based on events that happen in game.",
-	version = "4.1.2",
+	version = "4.1.3",
 	url = "http://steamcommunity.com/id/spartan_c001/",
 }
 
@@ -992,12 +992,21 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 
 				else
 				{
-					if (iConsecutiveKills < MAX_NUM_KILLS && strcmp(sKillSound, "", false) != 0 && (iKillConfig & 1) || ((iKillConfig & 2) && attackerClient == i) || ((iKillConfig & 4) && victimClient == i))
+					// Clamp translations and sounds to 26 with a random value if they exceed it every 2 kills
+					int killNum = g_iConsecutiveKills[attackerClient];
+					bool bOver = killNum > 26 && killNum % 2 == 0;
+					if (bOver)
+					{
+						killNum = PickRandomSoundValue();
+						sKillSound = killSound[soundPreset][killNum];
+					}
+
+					if (iConsecutiveKills < MAX_NUM_KILLS && strcmp(sKillSound, "", false) != 0 && (iKillConfig & 1) || ((iKillConfig & 2) && attackerClient == i) || ((iKillConfig & 4) && victimClient == i) || bOver)
 						EmitSoundCustom(i, sKillSound, _, _, _, _, g_fVolume);
 
-					if (g_iShowText[i] && g_iConsecutiveKills[attackerClient] < MAX_NUM_KILLS && ((iKillConfig & 8) || ((iKillConfig & 16) && attackerClient == i) || ((iKillConfig & 32) && victimClient == i)))
+					if (g_iShowText[i] && g_iConsecutiveKills[attackerClient] < MAX_NUM_KILLS && ((iKillConfig & 8) || ((iKillConfig & 16) && attackerClient == i) || ((iKillConfig & 32) && victimClient == i) || bOver))
 					{
-						Format(sBuffer, sizeof(sBuffer), "killsound %i", g_iConsecutiveKills[attackerClient]);
+						Format(sBuffer, sizeof(sBuffer), "killsound %i", killNum);
 						PrintCenterText(i, "%t", sBuffer, attackerName);
 					}
 				}
@@ -1076,4 +1085,35 @@ public void SetClientCookies(int client)
 
 	Format(sValue, sizeof(sValue), "%i", g_iSoundPreset[client]);
 	SetClientCookie(client, g_hSoundPreset, sValue);
+}
+
+stock int PickRandomSoundValue()
+{
+	int iRandom = GetRandomInt(0, 10);
+	switch (iRandom)
+	{
+		case 0:
+			iRandom = 4;
+		case 1:
+			iRandom = 6;
+		case 2:
+			iRandom = 8;
+		case 3:
+			iRandom = 10;
+		case 4:
+			iRandom = 14;
+		case 5:
+			iRandom = 16;
+		case 6:
+			iRandom = 18;
+		case 7:
+			iRandom = 20;
+		case 8:
+			iRandom = 22;
+		case 9:
+			iRandom = 24;
+		case 10:
+			iRandom = 26;
+	}
+	return iRandom;
 }
