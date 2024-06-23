@@ -18,7 +18,7 @@ public Plugin myinfo = {
 	name = "Quake Sounds",
 	author = "Spartan_C001, maxime1907, .Rushaway",
 	description = "Plays sounds based on events that happen in game.",
-	version = "4.1.3",
+	version = "4.1.4",
 	url = "http://steamcommunity.com/id/spartan_c001/",
 }
 
@@ -1075,6 +1075,9 @@ public void ReadClientCookies(int client)
 
 public void SetClientCookies(int client)
 {
+	if (!AreClientCookiesCached(client) || IsFakeClient(client))
+		return;
+
 	char sValue[8];
 
 	Format(sValue, sizeof(sValue), "%i", g_iShowText[client]);
