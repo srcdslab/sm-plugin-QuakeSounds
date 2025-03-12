@@ -18,7 +18,7 @@ public Plugin myinfo = {
 	name = "Quake Sounds",
 	author = "Spartan_C001, maxime1907, .Rushaway",
 	description = "Plays sounds based on events that happen in game.",
-	version = "4.1.4",
+	version = "4.1.5",
 	url = "http://steamcommunity.com/id/spartan_c001/",
 }
 
@@ -794,7 +794,7 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 		g_iConsecutiveKills[attackerClient] = 0;
 		for (int i = 1; i <= MaxClients; i++)
 		{
-			if (IsClientInGame(i) && !IsFakeClient(i) && 0)
+			if (IsClientInGame(i) && !IsFakeClient(i))
 			{
 				int soundPreset = g_iSoundPreset[i];
 				int soundConfig = selfkillConfig[soundPreset];
