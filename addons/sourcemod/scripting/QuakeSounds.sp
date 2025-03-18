@@ -793,9 +793,13 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 	GetClientName(attackerClient, attackerName, MAX_NAME_LENGTH);
 	GetClientName(victimClient, victimName, MAX_NAME_LENGTH);
 
-	if (g_cvar_SelfKill.BoolValue && (attackerClient == victimClient || attackerClient == 0))
+	if (attackerClient == victimClient || attackerClient == 0)
 	{
 		g_iConsecutiveKills[attackerClient] = 0;
+
+		if (!g_cvar_SelfKill.BoolValue)
+			return Plugin_Continue;
+
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			if (IsClientInGame(i) && !IsFakeClient(i))
@@ -813,9 +817,13 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 			}
 		}
 	}
-	else if (g_cvar_TeamKill.BoolValue && (GetClientTeam(attackerClient) == GetClientTeam(victimClient) && !GetConVarBool(g_cvar_TeamKillMode)))
+	else if (GetClientTeam(attackerClient) == GetClientTeam(victimClient) && !GetConVarBool(g_cvar_TeamKillMode))
 	{
 		g_iConsecutiveKills[attackerClient] = 0;
+
+		if (!g_cvar_TeamKill.BoolValue)
+			return Plugin_Continue;
+
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			if (IsClientInGame(i) && !IsFakeClient(i) && g_iSound[i])
