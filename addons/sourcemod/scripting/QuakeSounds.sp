@@ -18,7 +18,7 @@ public Plugin myinfo = {
 	name = "Quake Sounds",
 	author = "Spartan_C001, maxime1907, .Rushaway",
 	description = "Plays sounds based on events that happen in game.",
-	version = "4.1.5",
+	version = "4.1.6",
 	url = "http://steamcommunity.com/id/spartan_c001/",
 }
 
@@ -69,6 +69,8 @@ ConVar g_cvar_SoundPreset;
 ConVar g_cvar_Volume;
 ConVar g_cvar_TeamKillMode;
 ConVar g_cvar_ComboTime;
+ConVar g_cvar_SelfKill;
+ConVar g_cvar_TeamKill;
 
 EngineVersion g_evGameEngine;
 
@@ -92,6 +94,8 @@ public void OnPluginStart()
 	g_cvar_Volume = CreateConVar("sm_quakesounds_volume", "1.0", "Sound Volume: should be a number between 0.0 and 1.0.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_cvar_TeamKillMode = CreateConVar("sm_quakesounds_teamkill_mode", "0", "Teamkiller Mode; 0=Normal, 1=Team-Kills count as normal kills.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_cvar_ComboTime = CreateConVar("sm_quakesounds_combo_time", "2.0", "Max time in seconds between kills to count as combo; 0.0=Minimum, 2.0=Default", FCVAR_NONE, true, 0.0);
+	g_cvar_SelfKill = CreateConVar("sm_quakesounds_selfkill", "1", "Enable/Disable selfkill sounds; 0=Disabled, 1=Enabled", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_cvar_TeamKill = CreateConVar("sm_quakesounds_teamkill", "1", "Enable/Disable teamkill sounds; 0=Disabled, 1=Enabled", FCVAR_NONE, true, 0.0, true, 1.0);
 
 	g_hShowText = RegClientCookie("quakesounds_texts", "Display text", CookieAccess_Private);
 	g_hSound = RegClientCookie("quakesounds_sounds", "Enable sounds", CookieAccess_Private);
@@ -792,6 +796,10 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 	if (attackerClient == victimClient || attackerClient == 0)
 	{
 		g_iConsecutiveKills[attackerClient] = 0;
+
+		if (!g_cvar_SelfKill.BoolValue)
+			return Plugin_Continue;
+
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			if (IsClientInGame(i) && !IsFakeClient(i))
@@ -812,6 +820,10 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 	else if (GetClientTeam(attackerClient) == GetClientTeam(victimClient) && !GetConVarBool(g_cvar_TeamKillMode))
 	{
 		g_iConsecutiveKills[attackerClient] = 0;
+
+		if (!g_cvar_TeamKill.BoolValue)
+			return Plugin_Continue;
+
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			if (IsClientInGame(i) && !IsFakeClient(i) && g_iSound[i])
