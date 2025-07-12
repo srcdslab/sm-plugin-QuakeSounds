@@ -108,17 +108,19 @@ public void OnPluginStart()
 	AutoExecConfig(true);
 
 	// Late load
-	if (g_bLate)
+	if (!g_bLate)
+		return;
+
+	InitializeRound();
+	for (int i = 1; i <= MaxClients; i++)
 	{
-		InitializeRound();
-		for (int i = 1; i <= MaxClients; i++)
+		if (IsClientConnected(i))
 		{
-			if (IsClientConnected(i))
-			{
-				OnClientPostAdminCheck(i);
-			}
+			OnClientPostAdminCheck(i);
 		}
 	}
+
+	g_bLate = false;
 }
 
 public void OnMapStart()
@@ -141,7 +143,7 @@ public void OnClientPostAdminCheck(int client)
 	g_fLastKillTime[client] = -1.0;
 	g_iConsecutiveHeadshots[client] = 0;
 
-	if (AreClientCookiesCached(client))
+	if (!g_bLate && AreClientCookiesCached(client))
 		ReadClientCookies(client);
 
 	if (GetConVarBool(g_cvar_Announce))
