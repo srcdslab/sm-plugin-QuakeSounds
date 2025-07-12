@@ -143,7 +143,7 @@ public void OnClientPostAdminCheck(int client)
 	g_fLastKillTime[client] = -1.0;
 	g_iConsecutiveHeadshots[client] = 0;
 
-	if (!g_bLate && AreClientCookiesCached(client))
+	if (g_bLate && AreClientCookiesCached(client))
 		ReadClientCookies(client);
 
 	if (GetConVarBool(g_cvar_Announce))
