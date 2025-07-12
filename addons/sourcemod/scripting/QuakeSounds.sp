@@ -18,7 +18,7 @@ public Plugin myinfo = {
 	name = "Quake Sounds",
 	author = "Spartan_C001, maxime1907, .Rushaway",
 	description = "Plays sounds based on events that happen in game.",
-	version = "4.1.6",
+	version = "4.2.0",
 	url = "http://steamcommunity.com/id/spartan_c001/",
 }
 
@@ -59,7 +59,7 @@ int g_iConsecutiveHeadshots[MAXPLAYERS+1];
 float g_fLastKillTime[MAXPLAYERS+1];
 
 // Preferences
-Handle g_hShowText = INVALID_HANDLE, g_hSound = INVALID_HANDLE, g_hSoundPreset = INVALID_HANDLE;
+Handle g_hQuakeSettings = INVALID_HANDLE;
 int g_iShowText[MAXPLAYERS + 1] = {0, ...}, g_iSound[MAXPLAYERS + 1] = {0, ...}, g_iSoundPreset[MAXPLAYERS + 1] = {0, ...};
 
 ConVar g_cvar_Announce;
@@ -97,9 +97,7 @@ public void OnPluginStart()
 	g_cvar_SelfKill = CreateConVar("sm_quakesounds_selfkill", "1", "Enable/Disable selfkill sounds; 0=Disabled, 1=Enabled", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_cvar_TeamKill = CreateConVar("sm_quakesounds_teamkill", "1", "Enable/Disable teamkill sounds; 0=Disabled, 1=Enabled", FCVAR_NONE, true, 0.0, true, 1.0);
 
-	g_hShowText = RegClientCookie("quakesounds_texts", "Display text", CookieAccess_Private);
-	g_hSound = RegClientCookie("quakesounds_sounds", "Enable sounds", CookieAccess_Private);
-	g_hSoundPreset = RegClientCookie("quakesounds_sound_preset", "Sound preset", CookieAccess_Private);
+	g_hQuakeSettings = RegClientCookie("quakesounds_settings", "Quake Sounds Settings", CookieAccess_Private);
 
 	SetCookieMenuItem(CookieMenu_QuakeSounds, INVALID_HANDLE, "Quake Sound Settings");
 
@@ -150,11 +148,6 @@ public void OnClientPostAdminCheck(int client)
 		CreateTimer(ANNOUNCE_DELAY, Timer_Announce, client);
 
 	CreateTimer(JOIN_DELAY, Timer_JoinCheck, client, TIMER_FLAG_NO_MAPCHANGE);
-}
-
-public void OnClientDisconnect(int client)
-{
-	SetClientCookies(client);
 }
 
 public void OnClientCookiesCached(int client)
@@ -260,6 +253,7 @@ public int MenuHandler_QuakeSounds(Menu menu, MenuAction action, int param1, int
 						g_iSoundPreset[param1] = 0;
 				}
 			}
+			SaveClientCookies(param1);
 			DisplayMenu(menu, param1, MENU_TIME_FOREVER);
 		}
 		case MenuAction_DisplayItem:
@@ -1074,32 +1068,41 @@ stock void EmitSoundCustom(int client, const char[] sound, int entity=SOUND_FROM
 
 public void ReadClientCookies(int client)
 {
-	char sValue[8];
-	GetClientCookie(client, g_hShowText, sValue, sizeof(sValue));
-	g_iShowText[client] = (sValue[0] == '\0' ? GetConVarInt(g_cvar_Text) : StringToInt(sValue));
-
-	GetClientCookie(client, g_hSound, sValue, sizeof(sValue));
-	g_iSound[client] = (sValue[0] == '\0' ? GetConVarInt(g_cvar_Sound) : StringToInt(sValue));
-
-	GetClientCookie(client, g_hSoundPreset, sValue, sizeof(sValue));
-	g_iSoundPreset[client] = (sValue[0] == '\0' ? (GetConVarInt(g_cvar_SoundPreset) - 1) : StringToInt(sValue));
+	char sValue[32];
+	GetClientCookie(client, g_hQuakeSettings, sValue, sizeof(sValue));
+	
+	if (sValue[0] != '\0')
+	{
+		char sParts[3][16];
+		int numParts = ExplodeString(sValue, "|", sParts, sizeof(sParts), sizeof(sParts[]));
+		
+		if (numParts >= 1) {
+			g_iShowText[client] = StringToInt(sParts[0]);
+		}
+		if (numParts >= 2) {
+			g_iSound[client] = StringToInt(sParts[1]);
+		}
+		if (numParts >= 3) {
+			g_iSoundPreset[client] = StringToInt(sParts[2]);
+		}
+	}
+	else
+	{
+		// Default values
+		g_iShowText[client] = GetConVarInt(g_cvar_Text);
+		g_iSound[client] = GetConVarInt(g_cvar_Sound);
+		g_iSoundPreset[client] = GetConVarInt(g_cvar_SoundPreset) - 1;
+	}
 }
 
-public void SetClientCookies(int client)
+public void SaveClientCookies(int client)
 {
 	if (!AreClientCookiesCached(client) || IsFakeClient(client))
 		return;
 
-	char sValue[8];
-
-	Format(sValue, sizeof(sValue), "%i", g_iShowText[client]);
-	SetClientCookie(client, g_hShowText, sValue);
-
-	Format(sValue, sizeof(sValue), "%i", g_iSound[client]);
-	SetClientCookie(client, g_hSound, sValue);
-
-	Format(sValue, sizeof(sValue), "%i", g_iSoundPreset[client]);
-	SetClientCookie(client, g_hSoundPreset, sValue);
+	char sValue[32];
+	Format(sValue, sizeof(sValue), "%d|%d|%d", g_iShowText[client], g_iSound[client], g_iSoundPreset[client]);
+	SetClientCookie(client, g_hQuakeSettings, sValue);
 }
 
 stock int PickRandomSoundValue()
