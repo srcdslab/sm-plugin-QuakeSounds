@@ -1073,7 +1073,7 @@ public void ReadClientCookies(int client)
 	char sValue[32];
 	GetClientCookie(client, g_hQuakeSettings, sValue, sizeof(sValue));
 	
-	if (sValue[0] != '\0')
+	if (strlen(sValue) >= 5) //  Format is "0|0|0"
 	{
 		char sParts[3][16];
 		int numParts = ExplodeString(sValue, "|", sParts, sizeof(sParts), sizeof(sParts[]));
@@ -1085,7 +1085,8 @@ public void ReadClientCookies(int client)
 			g_iSound[client] = StringToInt(sParts[1]);
 		}
 		if (numParts >= 3) {
-			g_iSoundPreset[client] = StringToInt(sParts[2]);
+			int preset = StringToInt(sParts[2]);
+			g_iSoundPreset[client] = (preset >= 0 && preset < g_iNumSets) ? preset : 0;
 		}
 	}
 	else
@@ -1093,7 +1094,8 @@ public void ReadClientCookies(int client)
 		// Default values
 		g_iShowText[client] = GetConVarInt(g_cvar_Text);
 		g_iSound[client] = GetConVarInt(g_cvar_Sound);
-		g_iSoundPreset[client] = GetConVarInt(g_cvar_SoundPreset) - 1;
+		int defaultPreset = GetConVarInt(g_cvar_SoundPreset) - 1;
+		g_iSoundPreset[client] = (defaultPreset >= 0 && defaultPreset < g_iNumSets) ? defaultPreset : 0;
 	}
 }
 
