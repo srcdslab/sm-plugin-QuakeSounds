@@ -737,17 +737,17 @@ public Action Timer_JoinCheck(Handle timer, int iUserID)
 		}
 		return Plugin_Stop;
 	}
-	return Plugin_Continue;
+	return Plugin_Stop;
 }
 
 public Action Timer_Announce(Handle timer, int iUserID)
 {
 	int client = GetClientOfUserId(iUserID);
 	if (!client || !IsClientInGame(client))
-		return Plugin_Continue;
+		return Plugin_Stop;
 
 	PrintToChat(client, "%t", "announce message");
-	return Plugin_Continue;
+	return Plugin_Stop;
 }
 
 // Plays round play sound depending on each players config and the text display
