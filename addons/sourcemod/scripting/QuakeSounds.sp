@@ -18,7 +18,7 @@ public Plugin myinfo = {
 	name = "Quake Sounds",
 	author = "Spartan_C001, maxime1907, .Rushaway",
 	description = "Plays sounds based on events that happen in game.",
-	version = "4.2.0",
+	version = "4.2.1",
 	url = "http://steamcommunity.com/id/spartan_c001/",
 }
 
@@ -139,6 +139,8 @@ public void OnConfigsExecuted()
 
 public void OnClientPostAdminCheck(int client)
 {
+	int iUserID = GetClientUserId(client);
+
 	g_iConsecutiveKills[client] = 0;
 	g_fLastKillTime[client] = -1.0;
 	g_iConsecutiveHeadshots[client] = 0;
@@ -147,9 +149,9 @@ public void OnClientPostAdminCheck(int client)
 		ReadClientCookies(client);
 
 	if (GetConVarBool(g_cvar_Announce))
-		CreateTimer(ANNOUNCE_DELAY, Timer_Announce, client);
+		CreateTimer(ANNOUNCE_DELAY, Timer_Announce, iUserID, TIMER_FLAG_NO_MAPCHANGE);
 
-	CreateTimer(JOIN_DELAY, Timer_JoinCheck, client, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(JOIN_DELAY, Timer_JoinCheck, iUserID, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public void OnClientCookiesCached(int client)
@@ -709,9 +711,10 @@ public void LoadSet(char[] setFile, int setNum)
 // ##     ## ##     ## ##     ## ##   ##  ##    ## 
 // ##     ##  #######   #######  ##    ##  ######  
 
-public Action Timer_JoinCheck(Handle timer, any client)
+public Action Timer_JoinCheck(Handle timer, int iUserID)
 {
-	if (!IsClientConnected(client))
+	int client = GetClientOfUserId(iUserID);
+	if (!client || !IsClientConnected(client))
 		return Plugin_Stop;
 
 	if (IsClientInGame(client) && AreClientCookiesCached(client))
@@ -734,16 +737,17 @@ public Action Timer_JoinCheck(Handle timer, any client)
 		}
 		return Plugin_Stop;
 	}
-	return Plugin_Continue;
+	return Plugin_Stop;
 }
 
-public Action Timer_Announce(Handle timer, any client)
+public Action Timer_Announce(Handle timer, int iUserID)
 {
-	if (IsClientInGame(client))
-	{
-		PrintToChat(client, "%t", "announce message");
-	}
-	return Plugin_Continue;
+	int client = GetClientOfUserId(iUserID);
+	if (!client || !IsClientInGame(client))
+		return Plugin_Stop;
+
+	PrintToChat(client, "%t", "announce message");
+	return Plugin_Stop;
 }
 
 // Plays round play sound depending on each players config and the text display
