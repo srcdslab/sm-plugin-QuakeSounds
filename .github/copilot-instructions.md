@@ -27,36 +27,32 @@ QuakeSounds is a SourceMod plugin that enhances gameplay by playing dynamic soun
     └── plugin.quakesounds.txt      # Multi-language translations
 
 /sound/quake/                       # Sound files directory
-/.github/workflows/ci.yml           # CI/CD pipeline
-/sourceknight.yaml                  # Build configuration
+/.github/workflows/ci.yml           # CI/CD pipeline (native GitHub Actions)
 ```
 
 ## Development Environment Setup
 
 ### Prerequisites
-- SourceMod 1.11.0+ development environment
-- SourceKnight build tool (configured in `sourceknight.yaml`)
+- SourceMod 1.12.x development environment
+- `spcomp` SourcePawn compiler (installed via `rumblefrog/setup-sp` in CI)
 - Access to Source engine game server for testing
 
 ### Build System
-This project uses **SourceKnight** for building and packaging:
+This project builds via native GitHub Actions using the `spcomp` compiler directly:
 
 ```bash
-# Build the plugin
-sourceknight build
-
-# Output location: .sourceknight/package/
-# Compiled plugin: .sourceknight/package/common/addons/sourcemod/plugins/QuakeSounds.smx
+# Build the plugin (from addons/sourcemod/scripting)
+spcomp -o ../plugins/QuakeSounds.smx QuakeSounds.sp
 ```
 
 The CI/CD pipeline automatically:
-1. Builds the plugin using SourceKnight
+1. Builds the plugin using `spcomp`
 2. Packages configs, translations, and sound files
 3. Creates releases with complete installation packages
 
 ### Local Development Workflow
 1. Make changes to `QuakeSounds.sp`
-2. Test build with `sourceknight build`
+2. Test build with `spcomp`
 3. Deploy to test server for validation
 4. Run through event scenarios (kills, headshots, streaks)
 5. Verify sound/text configurations work correctly
