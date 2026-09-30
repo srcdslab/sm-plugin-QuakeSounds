@@ -28,7 +28,7 @@
 	{
 		"#format"	"{1:s}"
 		"en"		"{1} Head Hunter"
-		"de"		"{1} Kopfj?�ger"
+		"de"		"{1} Kopfjäger"
 		"fr"		"{1} Chasseur de Tête"
 		"pt"		"{1} Caçador de Cabeças"
 	}
@@ -116,9 +116,9 @@
 	{
 		"#format"	"{1:s}"
 		"en"		"HOLY SHIT, {1} is a bad ass"
-		"de"		"Heilige Schei?�e, {1} ist wahnsinnig"
+		"de"		"Heilige Scheiße, {1} ist wahnsinnig"
 		"fr"		"Incroyable, {1} est un dur à cuire"
-		"pt"		"Puta Merda, {1} é muito foda!
+		"pt"		"Puta Merda, {1} é muito foda!"
 	}
 	"combo 2"
 	{
@@ -155,8 +155,8 @@
 	"first blood"
 	{
 		"#format"	"{1:s}"
-		"en"		"First Blood"
-		"de"		"Erstes Blut vergossen"
+		"en"		"{1} drew First Blood!"
+		"de"		"{1} hat das erste Blut vergossen!"
 		"fr"		"{1} a fait la 1ere victime!"
 		"pt"		"{1} conseguiu o Primeiro Sangue!"
 	}	
@@ -187,7 +187,7 @@
 	{
 		"#format"	"{1:s},{2:s}"
 		"en"		"{2} was embarrassed with the knife by {1}"
-		"de"		"{2} wurde durch einen Messerkill von {1} blo?�gestellt"
+		"de"		"{2} wurde durch einen Messerkill von {1} bloßgestellt"
 		"fr"		"{2} a été découpé par {1}"
 		"pt"		"{2} foi humilhado com uma faca por {1}"
 	}
