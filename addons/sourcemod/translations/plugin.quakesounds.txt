@@ -118,7 +118,7 @@
 		"en"		"HOLY SHIT, {1} is a bad ass"
 		"de"		"Heilige Schei?�e, {1} ist wahnsinnig"
 		"fr"		"Incroyable, {1} est un dur à cuire"
-		"pt"		"Puta Merda, {1} é muito foda!
+		"pt"		"Puta Merda, {1} é muito foda!"
 	}
 	"combo 2"
 	{
