@@ -176,7 +176,7 @@ Multi-language support:
 ## Common Development Tasks
 
 ### Adding New Sound Events
-1. Add a value to the `SoundType` enum (numbered sounds stay before `Sound_FirstBlood`) and its section name to `g_sSoundSections[]`; `LoadSet()` then parses it
+1. Add a value to the `SoundType` enum (numbered sounds stay before `Sound_FirstBlood`, and `Sound_LastNumbered` must point to the last numbered type) and its section name to `g_sSoundSections[]`; `LoadSet()` then parses it
 2. Add event hook in `HookGameEvents()`
 3. Implement event handler function, announcing with `GetSetSound()` + `AnnounceToSet()`
 4. Update configuration files with new sounds

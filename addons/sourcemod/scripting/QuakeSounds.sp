@@ -32,6 +32,7 @@ enum SoundType
 	Sound_Headshot = 0,
 	Sound_Kill,
 	Sound_Combo,
+	Sound_LastNumbered = Sound_Combo,
 	Sound_FirstBlood,
 	Sound_Grenade,
 	Sound_SelfKill,
@@ -130,6 +131,11 @@ public void OnPluginStart()
 public void OnMapStart()
 {
 	LoadQuakeSetConfig();
+
+	// The set list may have shrunk since the last map
+	for (int i = 1; i <= MaxClients; i++)
+		g_iSoundPreset[i] = ClampSoundPreset(g_iSoundPreset[i]);
+
 	if (g_evGameEngine == Engine_HL2DM)
 	{
 		InitializeRound();
@@ -708,7 +714,7 @@ void LoadSet(const char[] setFile, int set)
 			continue;
 		}
 
-		bool numbered = type <= Sound_Combo;
+		bool numbered = type <= Sound_LastNumbered;
 		if (kv.GotoFirstSubKey() != numbered)
 		{
 			PrintToServer("[SM] Quake Sounds: '%s' section not configured correctly in %s.", g_sSoundSections[type], setFile);
@@ -724,8 +730,14 @@ void LoadSet(const char[] setFile, int set)
 		do
 		{
 			kv.GetSectionName(sNum, sizeof(sNum));
-			int num = StringToInt(sNum);
-			if (num >= 0 && LoadSound(kv, set, type, num, setFile) && type == Sound_Kill)
+			int num;
+			if (!StringToIntEx(sNum, num) || num < 0)
+			{
+				PrintToServer("[SM] Quake Sounds: invalid '%s' sub-section '%s' in %s.", g_sSoundSections[type], sNum, setFile);
+				continue;
+			}
+
+			if (LoadSound(kv, set, type, num, setFile) && type == Sound_Kill)
 				g_aSetKillNums[set].Push(num);
 		} while (kv.GotoNextKey());
 	}
