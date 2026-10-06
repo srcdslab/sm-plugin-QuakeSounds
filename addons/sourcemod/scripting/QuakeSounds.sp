@@ -9,47 +9,64 @@
 #define JOIN_DELAY					2.0
 
 #define MAX_NUM_SETS				255
-#define MAX_NUM_KILLS				999
+#define MAX_SET_NAME_LENGTH			64
 
 #define PATH_CONFIG_QUAKE_SET		"configs/quake/sets.cfg"
 #define PATH_CONFIG_QUAKE_SOUNDS	"configs/quake/sets"
+
+// "config" bits: 1/2/4 play the sound to everyone/attacker/victim, 8/16/32 print the text to the same targets
+#define CONFIG_TARGET_BITS			7
+#define CONFIG_TEXT_SHIFT			3
 
 public Plugin myinfo = {
 	name = "Quake Sounds",
 	author = "Spartan_C001, maxime1907, .Rushaway",
 	description = "Plays sounds based on events that happen in game.",
-	version = "4.2.2",
+	version = "4.3.0",
 	url = "http://steamcommunity.com/id/spartan_c001/",
+}
+
+// Numbered sounds come first: their section holds one sub-section per streak count
+enum SoundType
+{
+	Sound_Headshot = 0,
+	Sound_Kill,
+	Sound_Combo,
+	Sound_FirstBlood,
+	Sound_Grenade,
+	Sound_SelfKill,
+	Sound_RoundPlay,
+	Sound_Knife,
+	Sound_TeamKill,
+	Sound_Join,
+	Sound_Count
+}
+
+// Section of each sound type in the set config files
+char g_sSoundSections[Sound_Count][] = {
+	"headshot",
+	"killsound",
+	"combo",
+	"first blood",
+	"grenade",
+	"selfkill",
+	"round play",
+	"knife",
+	"teamkill",
+	"join server"
+};
+
+enum struct SoundEntry
+{
+	char path[PLATFORM_MAX_PATH];	// Empty for a text only entry
+	int config;
 }
 
 // Sound Sets
 int g_iNumSets = 0;
-char g_sSetsName[MAX_NUM_SETS][PLATFORM_MAX_PATH];
-
-// Sound Files
-char headshotSound[MAX_NUM_SETS][MAX_NUM_KILLS][PLATFORM_MAX_PATH];
-char grenadeSound[MAX_NUM_SETS][PLATFORM_MAX_PATH];
-char selfkillSound[MAX_NUM_SETS][PLATFORM_MAX_PATH];
-char roundplaySound[MAX_NUM_SETS][PLATFORM_MAX_PATH];
-char knifeSound[MAX_NUM_SETS][PLATFORM_MAX_PATH];
-char killSound[MAX_NUM_SETS][MAX_NUM_KILLS][PLATFORM_MAX_PATH];
-char firstbloodSound[MAX_NUM_SETS][PLATFORM_MAX_PATH];
-char teamkillSound[MAX_NUM_SETS][PLATFORM_MAX_PATH];
-char comboSound[MAX_NUM_SETS][MAX_NUM_KILLS][PLATFORM_MAX_PATH];
-char joinSound[MAX_NUM_SETS][PLATFORM_MAX_PATH];
-
-// Sound Configs
-int headshotConfig[MAX_NUM_SETS][MAX_NUM_KILLS];
-int grenadeConfig[MAX_NUM_SETS];
-int selfkillConfig[MAX_NUM_SETS];
-int roundplayConfig[MAX_NUM_SETS];
-int knifeConfig[MAX_NUM_SETS];
-int killConfig[MAX_NUM_SETS][MAX_NUM_KILLS];
-int firstbloodConfig[MAX_NUM_SETS];
-int teamkillConfig[MAX_NUM_SETS];
-int comboConfig[MAX_NUM_SETS][MAX_NUM_KILLS];
-int joinConfig[MAX_NUM_SETS];
-float g_fVolume = 1.0;
+char g_sSetName[MAX_NUM_SETS][MAX_SET_NAME_LENGTH];
+StringMap g_smSetSounds[MAX_NUM_SETS];		// "<type>:<num>" -> SoundEntry, only the configured sounds
+ArrayList g_aSetKillNums[MAX_NUM_SETS];		// Configured "killsound" numbers, ascending
 
 // Kill Streaks
 int g_iTotalKills = 0;
@@ -59,8 +76,10 @@ int g_iConsecutiveHeadshots[MAXPLAYERS+1];
 float g_fLastKillTime[MAXPLAYERS+1];
 
 // Preferences
-Handle g_hQuakeSettings = INVALID_HANDLE;
-int g_iShowText[MAXPLAYERS + 1] = {0, ...}, g_iSound[MAXPLAYERS + 1] = {0, ...}, g_iSoundPreset[MAXPLAYERS + 1] = {0, ...};
+Cookie g_cQuakeSettings;
+bool g_bShowText[MAXPLAYERS + 1];
+bool g_bSound[MAXPLAYERS + 1];
+int g_iSoundPreset[MAXPLAYERS + 1];
 
 ConVar g_cvar_Announce;
 ConVar g_cvar_Text;
@@ -97,30 +116,15 @@ public void OnPluginStart()
 	g_cvar_SelfKill = CreateConVar("sm_quakesounds_selfkill", "1", "Enable/Disable selfkill sounds; 0=Disabled, 1=Enabled", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_cvar_TeamKill = CreateConVar("sm_quakesounds_teamkill", "1", "Enable/Disable teamkill sounds; 0=Disabled, 1=Enabled", FCVAR_NONE, true, 0.0, true, 1.0);
 
-	g_hQuakeSettings = RegClientCookie("quakesounds_settings", "Quake Sounds Settings", CookieAccess_Private);
+	g_cQuakeSettings = new Cookie("quakesounds_settings", "Quake Sounds Settings", CookieAccess_Private);
 
-	SetCookieMenuItem(CookieMenu_QuakeSounds, INVALID_HANDLE, "Quake Sound Settings");
+	SetCookieMenuItem(CookieMenu_QuakeSounds, 0, "Quake Sound Settings");
 
 	RegConsoleCmd("sm_quake", Command_QuakeSounds);
 
 	HookGameEvents();
 
 	AutoExecConfig(true);
-
-	// Late load
-	if (!g_bLate)
-		return;
-
-	InitializeRound();
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if (IsClientConnected(i))
-		{
-			OnClientPostAdminCheck(i);
-		}
-	}
-
-	g_bLate = false;
 }
 
 public void OnMapStart()
@@ -134,21 +138,41 @@ public void OnMapStart()
 
 public void OnConfigsExecuted()
 {
-	g_fVolume = g_cvar_Volume.FloatValue;
+	// Late load: the sound sets and the cvars are ready now
+	if (!g_bLate)
+		return;
+
+	g_bLate = false;
+	InitializeRound();
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientConnected(i))
+			continue;
+
+		OnClientConnected(i);
+		if (AreClientCookiesCached(i))
+			ReadClientCookies(i);
+	}
+}
+
+public void OnClientConnected(int client)
+{
+	g_iConsecutiveKills[client] = 0;
+	g_iConsecutiveHeadshots[client] = 0;
+	g_fLastKillTime[client] = -1.0;
+
+	// Until the cookies are cached, do not keep the preferences of the previous player in this slot
+	LoadDefaultPreferences(client);
 }
 
 public void OnClientPostAdminCheck(int client)
 {
+	if (IsFakeClient(client))
+		return;
+
 	int iUserID = GetClientUserId(client);
 
-	g_iConsecutiveKills[client] = 0;
-	g_fLastKillTime[client] = -1.0;
-	g_iConsecutiveHeadshots[client] = 0;
-
-	if (g_bLate && AreClientCookiesCached(client))
-		ReadClientCookies(client);
-
-	if (GetConVarBool(g_cvar_Announce))
+	if (g_cvar_Announce.BoolValue)
 		CreateTimer(ANNOUNCE_DELAY, Timer_Announce, iUserID, TIMER_FLAG_NO_MAPCHANGE);
 
 	CreateTimer(JOIN_DELAY, Timer_JoinCheck, iUserID, TIMER_FLAG_NO_MAPCHANGE);
@@ -169,8 +193,9 @@ public void OnClientCookiesCached(int client)
 //   "Y8888P"   "Y88888P"  888       888 888       888 d88P     888 888    Y888 8888888P"   "Y8888P"
 
 public Action Command_QuakeSounds(int client, int args)
-{	
-	DisplayCookieMenu(client);
+{
+	if (client)
+		DisplayCookieMenu(client);
 	return Plugin_Handled;
 }
 
@@ -183,50 +208,60 @@ public Action Command_QuakeSounds(int client, int args)
 //  888   "   888 888        888   Y8888 Y88b. .d88P
 //  888       888 8888888888 888    Y888  "Y88888P"
 
-
 public void CookieMenu_QuakeSounds(int client, CookieMenuAction action, any info, char[] buffer, int maxlen)
 {
-	switch (action)
-	{
-		case CookieMenuAction_SelectOption:
-		{
-			DisplayCookieMenu(client);
-		}
-	}
+	if (action == CookieMenuAction_SelectOption)
+		DisplayCookieMenu(client);
 }
 
-public void DisplayCookieMenu(int client)
+void DisplayCookieMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_QuakeSounds, MENU_ACTIONS_DEFAULT | MenuAction_DisplayItem);
 	menu.ExitBackButton = true;
 	menu.ExitButton = true;
+	menu.SetTitle("%T", "quake menu", client);
 
-	char sBuffer[100];
-	Format(sBuffer, sizeof(sBuffer), "%T", "quake menu", client);
-	SetMenuTitle(menu, sBuffer);
+	char sBuffer[128];
+	for (int item = 0; item < 3; item++)
+	{
+		FormatMenuItem(client, item, sBuffer, sizeof(sBuffer));
+		menu.AddItem("", sBuffer);
+	}
 
-	Format(sBuffer, sizeof(sBuffer), "%T", g_iShowText[client] ? "disable text" : "enable text", client);
-	AddMenuItem(menu, "text pref", sBuffer);
+	menu.Display(client, MENU_TIME_FOREVER);
+}
 
-	Format(sBuffer, sizeof(sBuffer), "%T",  g_iSound[client] ? "sounds disable" : "sounds enable", client);
-	AddMenuItem(menu, "no sounds", sBuffer);
+void FormatMenuItem(int client, int item, char[] buffer, int maxlen)
+{
+	switch (item)
+	{
+		case 0:
+		{
+			FormatEx(buffer, maxlen, "%T", g_bShowText[client] ? "disable text" : "enable text", client);
+		}
+		case 1:
+		{
+			FormatEx(buffer, maxlen, "%T", g_bSound[client] ? "sounds disable" : "sounds enable", client);
+		}
+		case 2:
+		{
+			char sSetName[MAX_SET_NAME_LENGTH];
+			int set = g_iSoundPreset[client];
+			if (set >= g_iNumSets)
+				strcopy(sSetName, sizeof(sSetName), "Error");
+			else if (TranslationPhraseExists(g_sSetName[set]))
+				FormatEx(sSetName, sizeof(sSetName), "%T", g_sSetName[set], client);
+			else
+				strcopy(sSetName, sizeof(sSetName), g_sSetName[set]);
 
-	char sBufferSoundPack[64];
-	Format(sBufferSoundPack, sizeof(sBufferSoundPack), "%T", "sound pack", client);
-	char sBufferSoundPackOption[64];
-	if (g_iSoundPreset[client] < g_iNumSets)
-		Format(sBufferSoundPackOption, sizeof(sBufferSoundPackOption), "%T", g_sSetsName[g_iSoundPreset[client]], client);
-	else
-		Format(sBufferSoundPackOption, sizeof(sBufferSoundPackOption), "%s", "Error");
-	Format(sBuffer, sizeof(sBuffer), "%s: %s", sBufferSoundPack, sBufferSoundPackOption);
-	AddMenuItem(menu, "sound set", sBuffer);
-
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+			FormatEx(buffer, maxlen, "%T: %s", "sound pack", client, sSetName);
+		}
+	}
 }
 
 public int MenuHandler_QuakeSounds(Menu menu, MenuAction action, int param1, int param2)
 {
-	switch(action)
+	switch (action)
 	{
 		case MenuAction_End:
 		{
@@ -244,11 +279,11 @@ public int MenuHandler_QuakeSounds(Menu menu, MenuAction action, int param1, int
 			{
 				case 0:
 				{
-					g_iShowText[param1] = g_iShowText[param1] ? 0 : 1;
+					g_bShowText[param1] = !g_bShowText[param1];
 				}
 				case 1:
 				{
-					g_iSound[param1] = g_iSound[param1] ? 0 : 1;
+					g_bSound[param1] = !g_bSound[param1];
 				}
 				case 2:
 				{
@@ -258,42 +293,28 @@ public int MenuHandler_QuakeSounds(Menu menu, MenuAction action, int param1, int
 				}
 			}
 			SaveClientCookies(param1);
-			DisplayMenu(menu, param1, MENU_TIME_FOREVER);
+			menu.Display(param1, MENU_TIME_FOREVER);
 		}
 		case MenuAction_DisplayItem:
 		{
-			char sBuffer[32];
-			switch(param2)
-			{
-				case 0:
-				{
-					Format(sBuffer, sizeof(sBuffer), "%T", g_iShowText[param1] ? "disable text" : "enable text", param1);
-				}
-				case 1:
-				{
-					Format(sBuffer, sizeof(sBuffer), "%T",  g_iSound[param1] ? "sounds disable" : "sounds enable", param1);
-				}
-				case 2:
-				{
-					char sBufferSoundPack[64];
-					Format(sBufferSoundPack, sizeof(sBufferSoundPack), "%T", "sound pack", param1);
-					char sBufferSoundPackOption[64];
-					Format(sBufferSoundPack, sizeof(sBufferSoundPack), "%T", "sound pack", param1);
-					if (g_iSoundPreset[param1] < g_iNumSets)
-						Format(sBufferSoundPackOption, sizeof(sBufferSoundPackOption), "%T", g_sSetsName[g_iSoundPreset[param1]], param1);
-					else
-						Format(sBufferSoundPackOption, sizeof(sBufferSoundPackOption), "%s", "Error");
-					Format(sBuffer, sizeof(sBuffer), "%s: %s", sBufferSoundPack, sBufferSoundPackOption);
-				}
-			}
+			char sBuffer[128];
+			FormatMenuItem(param1, param2, sBuffer, sizeof(sBuffer));
 			return RedrawMenuItem(sBuffer);
 		}
 	}
 	return 0;
 }
 
+// ##     ##  #######   #######  ##    ##  ######
+// ##     ## ##     ## ##     ## ##   ##  ##    ##
+// ##     ## ##     ## ##     ## ##  ##   ##
+// ######### ##     ## ##     ## #####     ######
+// ##     ## ##     ## ##     ## ##  ##         ##
+// ##     ## ##     ## ##     ## ##   ##  ##    ##
+// ##     ##  #######   #######  ##    ##  ######
+
 // Hooks correct game events
-public void HookGameEvents()
+void HookGameEvents()
 {
 	HookEvent("player_death", Event_PlayerDeath);
 	switch (g_evGameEngine)
@@ -316,7 +337,7 @@ public void HookGameEvents()
 		}
 		case Engine_HL2DM:
 		{
-			HookEvent("teamplay_round_start", Event_RoundStart, EventHookMode_PostNoCopy);
+			// A round lasts the whole map, see OnMapStart()
 		}
 		default:
 		{
@@ -325,418 +346,17 @@ public void HookGameEvents()
 	}
 }
 
-// Loads QuakeSetsList config to check for sound sets
-public void LoadQuakeSetConfig()
-{
-	char sConfigFile[PLATFORM_MAX_PATH];
-
-	KeyValues KvConfig = new KeyValues("SetsList");
-
-	BuildPath(Path_SM, sConfigFile, PLATFORM_MAX_PATH, PATH_CONFIG_QUAKE_SET);
-
-	if (!KvConfig.ImportFromFile(sConfigFile))
-	{
-		delete KvConfig;
-		SetFailState("ImportFromFile() failed!");
-		return;
-	}
-	KvConfig.Rewind();
-
-	if (!KvConfig.GotoFirstSubKey())
-	{
-		delete KvConfig;
-		SetFailState("GotoFirstSubKey() failed!");
-		return;
-	}
-
-	g_iNumSets = 0;
-
-	do
-	{
-		char sSection[64];
-		KvConfig.GetSectionName(sSection, sizeof(sSection));
-
-		char sSoundSet[64];
-		KvConfig.GetString("name", sSoundSet, sizeof(sSoundSet));
-		if (!sSoundSet[0])
-		{
-			LogError("Could not find \"name\" in \"%s\"", sSection);
-			continue;
-		}
-
-		g_sSetsName[g_iNumSets] = sSoundSet;
-
-		BuildPath(Path_SM, sConfigFile, sizeof(sConfigFile), "%s/%s.cfg", PATH_CONFIG_QUAKE_SOUNDS, g_sSetsName[g_iNumSets]);
-		PrintToServer("[SM] Quake Sounds: Loading sound set config '%s'.", sConfigFile);
-		LoadSet(sConfigFile, g_iNumSets);
-		g_iNumSets++;
-	} while(KvConfig.GotoNextKey(false));
-
-	delete KvConfig;
-}
-
-// Loads sound file paths and configs for each sound set
-public void LoadSet(char[] setFile, int setNum)
-{
-	char sBuffer[PLATFORM_MAX_PATH];
-	Handle SetFileKV = CreateKeyValues("SoundSet");
-	if (FileToKeyValues(SetFileKV, setFile))
-	{
-		if (KvJumpToKey(SetFileKV, "headshot"))
-		{
-			if (KvGotoFirstSubKey(SetFileKV))
-			{
-				do
-				{
-					KvGetSectionName(SetFileKV, sBuffer, sizeof(sBuffer));
-					int killNum = StringToInt(sBuffer);
-					if (killNum >= 0)
-					{
-						KvGetString(SetFileKV, "sound", headshotSound[setNum][killNum], sizeof(sBuffer));
-						headshotConfig[setNum][killNum] = KvGetNum(SetFileKV, "config", 9);
-						Format(sBuffer, sizeof(sBuffer), "sound/%s", headshotSound[setNum][killNum]);
-						if (FileExists(sBuffer, true))
-						{
-							PrecacheSoundCustom(headshotSound[setNum][killNum], PLATFORM_MAX_PATH);
-							AddFileToDownloadsTable(sBuffer);
-						}
-						else
-						{
-							headshotConfig[setNum][killNum] = 0;
-							PrintToServer("[SM] Quake Sounds: File specified in 'headshot %i' does not exist in '%s', ignoring.", killNum, setFile);
-						}
-					}
-				} while (KvGotoNextKey(SetFileKV));
-				KvGoBack(SetFileKV);
-			}
-			else
-			{
-				PrintToServer("[SM] Quake Sounds: 'headshot' section not configured correctly in %s.", setFile);
-			}
-		}
-		else
-		{
-			PrintToServer("[SM] Quake Sounds: 'headshot' section missing in %s.", setFile);
-		}
-		KvRewind(SetFileKV);
-		if (KvJumpToKey(SetFileKV,"grenade"))
-		{
-			if (KvGotoFirstSubKey(SetFileKV))
-			{
-				PrintToServer("[SM] Quake Sounds: 'grenade' section not configured correctly in %s.", setFile);
-				KvGoBack(SetFileKV);
-			}
-			else
-			{
-				KvGetString(SetFileKV, "sound", grenadeSound[setNum], sizeof(sBuffer));
-				grenadeConfig[setNum] = KvGetNum(SetFileKV, "config", 9);
-				Format(sBuffer, sizeof(sBuffer), "sound/%s", grenadeSound[setNum]);
-				if (FileExists(sBuffer, true))
-				{
-					PrecacheSoundCustom(grenadeSound[setNum], PLATFORM_MAX_PATH);
-					AddFileToDownloadsTable(sBuffer);
-				}
-				else
-				{
-					grenadeConfig[setNum] = 0;
-					PrintToServer("[SM] Quake Sounds: File specified in 'grenade' does not exist in '%s', ignoring.", setFile);
-				}
-			}
-		}
-		else
-		{
-			PrintToServer("[SM] Quake Sounds: 'grenade' section missing in %s.", setFile);
-		}
-		KvRewind(SetFileKV);
-		if (KvJumpToKey(SetFileKV, "selfkill"))
-		{
-			if (KvGotoFirstSubKey(SetFileKV))
-			{
-				PrintToServer("[SM] Quake Sounds: 'selfkill' section not configured correctly in %s.", setFile);
-				KvGoBack(SetFileKV);
-			}
-			else
-			{
-				KvGetString(SetFileKV, "sound", selfkillSound[setNum], sizeof(sBuffer));
-				selfkillConfig[setNum] = KvGetNum(SetFileKV, "config", 9);
-				Format(sBuffer, sizeof(sBuffer), "sound/%s", selfkillSound[setNum]);
-				if (FileExists(sBuffer, true))
-				{
-					PrecacheSoundCustom(selfkillSound[setNum], PLATFORM_MAX_PATH);
-					AddFileToDownloadsTable(sBuffer);
-				}
-				else
-				{
-					selfkillConfig[setNum] = 0;
-					PrintToServer("[SM] Quake Sounds: File specified in 'selfkill' does not exist in '%s', ignoring.", setFile);
-				}
-			}
-		}
-		else
-		{
-			PrintToServer("[SM] Quake Sounds: 'selfkill' section missing in %s.", setFile);
-		}
-		KvRewind(SetFileKV);
-		if (KvJumpToKey(SetFileKV,"round play"))
-		{
-			if (KvGotoFirstSubKey(SetFileKV))
-			{
-				PrintToServer("[SM] Quake Sounds: 'round play' section not configured correctly in %s.", setFile);
-				KvGoBack(SetFileKV);
-			}
-			else
-			{
-				KvGetString(SetFileKV, "sound", roundplaySound[setNum], sizeof(sBuffer));
-				roundplayConfig[setNum] = KvGetNum(SetFileKV, "config", 9);
-				Format(sBuffer, sizeof(sBuffer), "sound/%s", roundplaySound[setNum]);
-				if (FileExists(sBuffer, true))
-				{
-					PrecacheSoundCustom(roundplaySound[setNum], PLATFORM_MAX_PATH);
-					AddFileToDownloadsTable(sBuffer);
-				}
-				else
-				{
-					roundplayConfig[setNum] = 0;
-					PrintToServer("[SM] Quake Sounds: File specified in 'round play' does not exist in '%s', ignoring.", setFile);
-				}
-			}
-		}
-		else
-		{
-			PrintToServer("[SM] Quake Sounds: 'round play' section missing in %s.", setFile);
-		}
-		KvRewind(SetFileKV);
-		if (KvJumpToKey(SetFileKV, "knife"))
-		{
-			if (KvGotoFirstSubKey(SetFileKV))
-			{
-				PrintToServer("[SM] Quake Sounds: 'knife' section not configured correctly in %s.", setFile);
-				KvGoBack(SetFileKV);
-			}
-			else
-			{
-				KvGetString(SetFileKV, "sound", knifeSound[setNum], sizeof(sBuffer));
-				knifeConfig[setNum] = KvGetNum(SetFileKV, "config", 9);
-				Format(sBuffer, sizeof(sBuffer), "sound/%s", knifeSound[setNum]);
-				if (FileExists(sBuffer, true))
-				{
-					PrecacheSoundCustom(knifeSound[setNum], PLATFORM_MAX_PATH);
-					AddFileToDownloadsTable(sBuffer);
-				}
-				else
-				{
-					knifeConfig[setNum] = 0;
-					PrintToServer("[SM] Quake Sounds: File specified in 'knife' does not exist in '%s', ignoring.", setFile);
-				}
-			}
-		}
-		else
-		{
-			PrintToServer("[SM] Quake Sounds: 'knife' section missing in %s.", setFile);
-		}
-		KvRewind(SetFileKV);
-		if (KvJumpToKey(SetFileKV, "killsound"))
-		{
-			if (KvGotoFirstSubKey(SetFileKV))
-			{
-				do
-				{
-					KvGetSectionName(SetFileKV, sBuffer, sizeof(sBuffer));
-					int killNum = StringToInt(sBuffer);
-					if (killNum >= 0)
-					{
-						KvGetString(SetFileKV, "sound", killSound[setNum][killNum], sizeof(sBuffer));
-						killConfig[setNum][killNum] = KvGetNum(SetFileKV, "config", 9);
-						Format(sBuffer, sizeof(sBuffer), "sound/%s", killSound[setNum][killNum]);
-						if (FileExists(sBuffer, true))
-						{
-							PrecacheSoundCustom(killSound[setNum][killNum], PLATFORM_MAX_PATH);
-							AddFileToDownloadsTable(sBuffer);
-						}
-						else
-						{
-							killConfig[setNum][killNum] = 0;
-							PrintToServer("[SM] Quake Sounds: File specified in 'killsound %i' does not exist in '%s', ignoring.", killNum, setFile);
-						}
-					}
-				} while (KvGotoNextKey(SetFileKV));
-				KvGoBack(SetFileKV);
-			}
-			else
-			{
-				PrintToServer("[SM] Quake Sounds: 'killsound' section not configured correctly in %s.", setFile);
-			}
-		}
-		else
-		{
-			PrintToServer("[SM] Quake Sounds: 'killsound' section missing in %s.", setFile);
-		}
-		KvRewind(SetFileKV);
-		if (KvJumpToKey(SetFileKV, "first blood"))
-		{
-			if (KvGotoFirstSubKey(SetFileKV))
-			{
-				PrintToServer("[SM] Quake Sounds: 'first blood' section not configured correctly in %s.", setFile);
-				KvGoBack(SetFileKV);
-			}
-			else
-			{
-				KvGetString(SetFileKV, "sound", firstbloodSound[setNum], sizeof(sBuffer));
-				firstbloodConfig[setNum] = KvGetNum(SetFileKV, "config", 9);
-				Format(sBuffer, sizeof(sBuffer), "sound/%s", firstbloodSound[setNum]);
-				if (FileExists(sBuffer, true))
-				{
-					PrecacheSoundCustom(firstbloodSound[setNum], sizeof(sBuffer));
-					AddFileToDownloadsTable(sBuffer);
-				}
-				else
-				{
-					firstbloodConfig[setNum] = 0;
-					PrintToServer("[SM] Quake Sounds: File specified in 'first blood' does not exist in '%s', ignoring.", setFile);
-				}
-			}
-		}
-		else
-		{
-			PrintToServer("[SM] Quake Sounds: 'first blood' section missing in %s.", setFile);
-		}
-		KvRewind(SetFileKV);
-		if (KvJumpToKey(SetFileKV,"teamkill"))
-		{
-			if (KvGotoFirstSubKey(SetFileKV))
-			{
-				PrintToServer("[SM] Quake Sounds: 'teamkill' section not configured correctly in %s.", setFile);
-				KvGoBack(SetFileKV);
-			}
-			else
-			{
-				KvGetString(SetFileKV, "sound", teamkillSound[setNum], sizeof(sBuffer));
-				teamkillConfig[setNum] = KvGetNum(SetFileKV, "config", 9);
-				Format(sBuffer, sizeof(sBuffer), "sound/%s", teamkillSound[setNum]);
-				if (FileExists(sBuffer, true))
-				{
-					PrecacheSoundCustom(teamkillSound[setNum], sizeof(sBuffer));
-					AddFileToDownloadsTable(sBuffer);
-				}
-				else
-				{
-					teamkillConfig[setNum] = 0;
-					PrintToServer("[SM] Quake Sounds: File specified in 'teamkill' does not exist in '%s', ignoring.", setFile);
-				}
-			}
-		}
-		else
-		{
-			PrintToServer("[SM] Quake Sounds: 'teamkill' section missing in %s.", setFile);
-		}
-		KvRewind(SetFileKV);
-		if (KvJumpToKey(SetFileKV, "combo"))
-		{
-			if (KvGotoFirstSubKey(SetFileKV))
-			{
-				do
-				{
-					KvGetSectionName(SetFileKV, sBuffer, sizeof(sBuffer));
-					int killNum = StringToInt(sBuffer);
-					if (killNum >= 0)
-					{
-						KvGetString(SetFileKV, "sound", comboSound[setNum][killNum], sizeof(sBuffer));
-						comboConfig[setNum][killNum] = KvGetNum(SetFileKV, "config", 9);
-						Format(sBuffer, sizeof(sBuffer), "sound/%s", comboSound[setNum][killNum]);
-						if (FileExists(sBuffer, true))
-						{
-							PrecacheSoundCustom(comboSound[setNum][killNum], sizeof(sBuffer));
-							AddFileToDownloadsTable(sBuffer);
-						}
-						else
-						{
-							comboConfig[setNum][killNum] = 0;
-							PrintToServer("[SM] Quake Sounds: File specified in 'combo %i' does not exist in '%s', ignoring.", killNum, setFile);
-						}
-					}
-				} while (KvGotoNextKey(SetFileKV));
-				KvGoBack(SetFileKV);
-			}
-			else
-			{
-				PrintToServer("[SM] Quake Sounds: 'combo' section not configured correctly in %s.", setFile);
-			}
-		}
-		else
-		{
-			PrintToServer("[SM] Quake Sounds: 'combo' section missing in %s.", setFile);
-		}
-		KvRewind(SetFileKV);
-		if (KvJumpToKey(SetFileKV,"join server"))
-		{
-			if (KvGotoFirstSubKey(SetFileKV))
-			{
-				PrintToServer("[SM] Quake Sounds: 'join server' section not configured correctly in %s.", setFile);
-				KvGoBack(SetFileKV);
-			}
-			else
-			{
-				KvGetString(SetFileKV, "sound", joinSound[setNum], sizeof(sBuffer));
-				joinConfig[setNum] = KvGetNum(SetFileKV, "config", 9);
-				Format(sBuffer, sizeof(sBuffer), "sound/%s", joinSound[setNum]);
-				if (FileExists(sBuffer, true))
-				{
-					PrecacheSoundCustom(joinSound[setNum], PLATFORM_MAX_PATH);
-					AddFileToDownloadsTable(sBuffer);
-				}
-				else
-				{
-					joinConfig[setNum] = 0;
-					PrintToServer("[SM] Quake Sounds: File specified in 'join server' does not exist in '%s', ignoring.", setFile);
-				}
-			}
-		}
-		else
-		{
-			PrintToServer("[SM] Quake Sounds: 'join server' section missing in %s.", setFile);
-		}
-	}
-	else
-	{
-		PrintToServer("[SM] Quake Sounds: Cannot parse '%s', file not found or incorrectly structured!", setFile);
-	}
-	CloseHandle(SetFileKV);
-}
-
-// ##     ##  #######   #######  ##    ##  ######  
-// ##     ## ##     ## ##     ## ##   ##  ##    ## 
-// ##     ## ##     ## ##     ## ##  ##   ##       
-// ######### ##     ## ##     ## #####     ######  
-// ##     ## ##     ## ##     ## ##  ##         ## 
-// ##     ## ##     ## ##     ## ##   ##  ##    ## 
-// ##     ##  #######   #######  ##    ##  ######  
-
 public Action Timer_JoinCheck(Handle timer, int iUserID)
 {
 	int client = GetClientOfUserId(iUserID);
-	if (!client || !IsClientConnected(client))
+	if (!client || !IsClientInGame(client) || !AreClientCookiesCached(client) || !g_bSound[client])
 		return Plugin_Stop;
 
-	if (IsClientInGame(client) && AreClientCookiesCached(client))
-	{
-		if (g_iSound[client])
-		{
-			for (int i = 1; i < MAX_NUM_SETS; i++)
-			{
-				if (strcmp(joinSound[g_iSoundPreset[client]], "", false) != 0)
-				{
-					if (joinConfig[g_iSoundPreset[client]] & i)
-					{
-						EmitSoundCustom(client, joinSound[g_iSoundPreset[client]], _, _, _, _, g_fVolume);
-						break;
-					}
-				}
-				else
-					break;
-			}
-		}
-		return Plugin_Stop;
-	}
+	int set = g_iSoundPreset[client];
+	SoundEntry entry;
+	if (set < g_iNumSets && GetSetSound(set, Sound_Join, 0, entry) && entry.path[0] && (entry.config & CONFIG_TARGET_BITS))
+		EmitSoundToClient(client, entry.path, .volume = g_cvar_Volume.FloatValue);
+
 	return Plugin_Stop;
 }
 
@@ -751,307 +371,413 @@ public Action Timer_Announce(Handle timer, int iUserID)
 }
 
 // Plays round play sound depending on each players config and the text display
-public void Event_RoundFreezeEnd(Handle event, const char[] name, bool dontBroadcast)
+public void Event_RoundFreezeEnd(Event event, const char[] name, bool dontBroadcast)
 {
-	for (int i = 1; i <= MaxClients; i++)
+	SoundEntry entry;
+	for (int set = 0; set < g_iNumSets; set++)
 	{
-		if (IsClientInGame(i) && !IsFakeClient(i) && g_iSound[i])
-		{
-			if (strcmp(roundplaySound[g_iSoundPreset[i]], "", false) != 0 && (roundplayConfig[g_iSoundPreset[i]] & 1) || (roundplayConfig[g_iSoundPreset[i]] & 2) || (roundplayConfig[g_iSoundPreset[i]] & 4))
-			{
-				EmitSoundCustom(i, roundplaySound[g_iSoundPreset[i]], _, _, _, _, g_fVolume);
-			}
-			if (g_iShowText[i] && (roundplayConfig[g_iSoundPreset[i]] & 8) || (roundplayConfig[g_iSoundPreset[i]] & 16) || (roundplayConfig[g_iSoundPreset[i]] & 32))
-			{
-				PrintCenterText(i, "%t", "round play");
-			}
-		}
+		if (!GetSetSound(set, Sound_RoundPlay, 0, entry))
+			continue;
+
+		// There is no attacker nor victim here, any target means everyone
+		if (entry.config & CONFIG_TARGET_BITS)
+			entry.config |= 1;
+		if ((entry.config >> CONFIG_TEXT_SHIFT) & CONFIG_TARGET_BITS)
+			entry.config |= 1 << CONFIG_TEXT_SHIFT;
+
+		AnnounceToSet(set, entry, "round play", 0, 0, "", "");
 	}
 }
 
-public void Event_RoundStart(Handle event, const char[] name, bool dontBroadcast)
+public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
-	if (g_evGameEngine != Engine_HL2DM)
-	{
-		InitializeRound();
-	}
+	InitializeRound();
 }
 
 // Important bit - does all kill/combo/custom kill sounds and things!
-public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
+public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	int victimClient = GetClientOfUserId(GetEventInt(event,"userid"));
+	int victim = GetClientOfUserId(event.GetInt("userid"));
+	if (!victim)
+		return;
 
-	if (victimClient < 1 || victimClient > MaxClients)
-		return Plugin_Continue;
+	int attacker = GetClientOfUserId(event.GetInt("attacker"));
 
-	int attackerClient = GetClientOfUserId(GetEventInt(event,"attacker"));
-	if (attackerClient < 0 || attackerClient > MaxClients)
-		return Plugin_Continue;
+	char victimName[MAX_NAME_LENGTH], attackerName[MAX_NAME_LENGTH];
+	GetClientName(victim, victimName, sizeof(victimName));
+	if (attacker)
+		GetClientName(attacker, attackerName, sizeof(attackerName));
 
-	char victimName[MAX_NAME_LENGTH], attackerName[MAX_NAME_LENGTH], sBuffer[256];
-	GetClientName(attackerClient, attackerName, MAX_NAME_LENGTH);
-	GetClientName(victimClient, victimName, MAX_NAME_LENGTH);
-
-	if (attackerClient == victimClient || attackerClient == 0)
+	if (attacker == victim || !attacker)
 	{
-		g_iConsecutiveKills[attackerClient] = 0;
-
-		if (!g_cvar_SelfKill.BoolValue)
-			return Plugin_Continue;
-
-		for (int i = 1; i <= MaxClients; i++)
-		{
-			if (IsClientInGame(i) && !IsFakeClient(i))
-			{
-				int soundPreset = g_iSoundPreset[i];
-				int soundConfig = selfkillConfig[soundPreset];
-				char sound[PLATFORM_MAX_PATH];
-				sound = selfkillSound[soundPreset];
-
-				if ((strcmp(sound, "", false) != 0) && (soundConfig & 1) || ((soundConfig & 2) && attackerClient == i) || ((soundConfig & 4) && victimClient == i))
-					EmitSoundCustom(i, sound, _, _, _, _, g_fVolume);
-
-				if (g_iShowText[i] && ((soundConfig & 8) || ((soundConfig & 16) && attackerClient == i) || ((soundConfig & 32) && victimClient == i)))
-					PrintCenterText(i, "%t", "selfkill", victimName);
-			}
-		}
+		if (g_cvar_SelfKill.BoolValue)
+			AnnounceToAllSets(Sound_SelfKill, "selfkill", attacker, victim, victimName, "");
 	}
-	else if (GetClientTeam(attackerClient) == GetClientTeam(victimClient) && !GetConVarBool(g_cvar_TeamKillMode))
+	else if (!g_cvar_TeamKillMode.BoolValue && GetClientTeam(attacker) == GetClientTeam(victim))
 	{
-		g_iConsecutiveKills[attackerClient] = 0;
+		g_iConsecutiveKills[attacker] = 0;
 
-		if (!g_cvar_TeamKill.BoolValue)
-			return Plugin_Continue;
-
-		for (int i = 1; i <= MaxClients; i++)
-		{
-			if (IsClientInGame(i) && !IsFakeClient(i) && g_iSound[i])
-			{
-				int soundPreset = g_iSoundPreset[i];
-				int soundConfig = selfkillConfig[soundPreset];
-				char sound[PLATFORM_MAX_PATH];
-				sound = teamkillSound[soundPreset];
-
-				if (strcmp(sound, "", false) != 0 && (soundConfig & 1) || ((soundConfig & 2) && attackerClient == i) || ((soundConfig & 4) && victimClient == i))
-					EmitSoundCustom(i, sound, _, _, _, _, g_fVolume);
-
-				if (g_iShowText[i] && ((soundConfig & 8) || ((soundConfig & 16) && attackerClient == i) || ((soundConfig & 32) && victimClient == i)))
-					PrintCenterText(i, "%t", "teamkill", attackerName, victimName);
-			}
-		}
+		if (g_cvar_TeamKill.BoolValue)
+			AnnounceToAllSets(Sound_TeamKill, "teamkill", attacker, victim, attackerName, victimName);
 	}
 	else
 	{
-		g_iTotalKills++;
-		g_iConsecutiveKills[attackerClient]++;
-		bool firstblood = false;
-		bool headshot = false;
-		bool knife = false;
-		bool grenade = false;
-		bool combo = false;
-		int customkill = -1;
-
-		char weapon[64];
-		GetEventString(event, "weapon", weapon, sizeof(weapon));
-
-		if (g_evGameEngine == Engine_CSS || g_evGameEngine == Engine_CSGO)
-			headshot = GetEventBool(event,"headshot");
-		else if (g_evGameEngine == Engine_TF2)
-		{
-			customkill = GetEventInt(event,"customkill");
-			if (customkill == 1)
-				headshot = true;
-		}
-
-		if (headshot)
-			g_iConsecutiveHeadshots[attackerClient]++;
-
-		float fLastKillTimeTmp = g_fLastKillTime[attackerClient];
-		g_fLastKillTime[attackerClient] = GetEngineTime();
-		
-		if (fLastKillTimeTmp == -1.0 || (g_fLastKillTime[attackerClient] - fLastKillTimeTmp) > GetConVarFloat(g_cvar_ComboTime))
-		{
-			g_iComboScore[attackerClient] = 1;
-			combo = false;
-		}
-		else
-		{
-			g_iComboScore[attackerClient]++;
-			combo = true;
-		}
-
-		if (g_iTotalKills == 1)
-			firstblood = true;
-
-		if (g_evGameEngine == Engine_TF2 && customkill == 2)
-			knife = true;
-
-		else if (g_evGameEngine == Engine_CSS)
-		{
-			
-			if (strcmp(weapon, "hegrenade", false) == 0 || strcmp(weapon, "smokegrenade", false) == 0 || strcmp(weapon, "flashbang", false) == 0)
-				grenade = true;
-			else if (StrContains(weapon, "knife", false) != -1)
-				knife = true;
-		}
-		else if (g_evGameEngine == Engine_CSGO)
-		{
-			if (strcmp(weapon, "inferno", false) == 0 || strcmp(weapon, "hegrenade", false) == 0 || strcmp(weapon, "flashbang", false) == 0 || strcmp(weapon, "decoy", false) == 0 || strcmp(weapon, "smokegrenade", false) == 0)
-				grenade = true;
-			else if (StrContains(weapon, "knife", false) != -1 || StrContains(weapon, "bayonet", false) != -1)
-				knife = true;
-		}
-		else if (g_evGameEngine == Engine_DODS)
-		{
-			
-			if (strcmp(weapon, "riflegren_ger", false) == 0 || strcmp(weapon, "riflegren_us", false) == 0 || strcmp(weapon, "frag_ger", false) == 0 || strcmp(weapon, "frag_us", false) == 0 || strcmp(weapon, "smoke_ger", false) == 0 || strcmp(weapon, "smoke_us", false) == 0)
-				grenade = true;
-			else if (strcmp(weapon, "spade", false) == 0 || strcmp(weapon, "amerknife", false) == 0 || strcmp(weapon, "punch", false) == 0)
-				knife = true;
-		}
-		else if (g_evGameEngine == Engine_HL2DM)
-		{
-			if (strcmp(weapon, "grenade_frag", false) == 0)
-				grenade = true;
-			else if (strcmp(weapon,"stunstick", false) == 0 || strcmp(weapon,"crowbar", false) == 0)
-				knife = true;
-		}
-		for (int i = 1; i <= MaxClients; i++)
-		{
-			if (IsClientInGame(i) && !IsFakeClient(i) && g_iSound[i])
-			{
-				int iComboScore = g_iComboScore[attackerClient];
-				int iConsecutiveKills = g_iConsecutiveKills[attackerClient];
-				int soundPreset = g_iSoundPreset[i];
-				int iFirstBConfig = firstbloodConfig[soundPreset];
-				int iHeadShotConfig = headshotConfig[soundPreset][iConsecutiveKills];
-				int iConsecutiveHeadshots = g_iConsecutiveHeadshots[attackerClient];
-				int iConsecutiveHSConfig = headshotConfig[soundPreset][iConsecutiveHeadshots];
-				int iKnifeConfig = knifeConfig[soundPreset];
-				int iGrenadeConfig = grenadeConfig[soundPreset];
-				int iKillConfig = killConfig[soundPreset][iConsecutiveKills];
-				int iComboConfig = comboConfig[soundPreset][iComboScore];
-
-				char sFirstBSound[PLATFORM_MAX_PATH], sHeadShotSound[PLATFORM_MAX_PATH], sComboSound[PLATFORM_MAX_PATH];
-				char sKnifeSound[PLATFORM_MAX_PATH], sGrenadeSound[PLATFORM_MAX_PATH], sKillSound[PLATFORM_MAX_PATH];
-				sFirstBSound = firstbloodSound[soundPreset];
-				sHeadShotSound = headshotSound[soundPreset][iConsecutiveHeadshots];
-				sComboSound = comboSound[soundPreset][iComboScore];
-				sKnifeSound = knifeSound[soundPreset];
-				sGrenadeSound = grenadeSound[soundPreset];
-				sKillSound = killSound[soundPreset][iConsecutiveKills];
-
-				if (firstblood && iFirstBConfig > 0)
-				{
-					if (strcmp(sFirstBSound, "", false) != 0 && (iFirstBConfig & 1) || ((iFirstBConfig & 2) && attackerClient == i) || ((iFirstBConfig & 4) && victimClient == i))
-						EmitSoundCustom(i, sFirstBSound, _, _, _, _, g_fVolume);
-
-					if (g_iShowText[i] && ((iFirstBConfig & 8) || ((iFirstBConfig & 16) && attackerClient == i) || ((iFirstBConfig & 32) && victimClient == i)))
-						PrintCenterText(i, "%t", "first blood", attackerName);
-				}
-
-				else if (headshot && iHeadShotConfig > 0)
-				{
-					if (strcmp(sHeadShotSound, "", false) != 0 && (iHeadShotConfig & 1) || ((iHeadShotConfig & 2) && attackerClient == i) || ((iHeadShotConfig & 4) && victimClient == i))
-						EmitSoundCustom(i, sHeadShotSound, _, _, _, _, g_fVolume);
-					
-					if (g_iShowText[i] && ((iHeadShotConfig & 8) || ((iHeadShotConfig & 16) && attackerClient == i) || ((iHeadShotConfig & 32) && victimClient == i)))
-						PrintCenterText(i, "%t", "headshot", attackerName);
-				}
-
-				else if (headshot && iConsecutiveHeadshots < MAX_NUM_KILLS && iConsecutiveHSConfig > 0)
-				{
-					if (strcmp(sHeadShotSound, "", false) != 0 && (iConsecutiveHSConfig & 1) || ((iConsecutiveHSConfig & 2) && attackerClient == i) || ((iConsecutiveHSConfig & 4) && victimClient == i))
-						EmitSoundCustom(i, sHeadShotSound, _, _, _, _, g_fVolume);
-
-					if (g_iShowText[i] && iConsecutiveHeadshots < MAX_NUM_KILLS && ((iConsecutiveHSConfig & 8) || ((iConsecutiveHSConfig & 16) && attackerClient == i) || ((iConsecutiveHSConfig & 32) && victimClient == i)))
-					{
-						Format(sBuffer, sizeof(sBuffer), "headshot %i", iConsecutiveHeadshots);
-						PrintCenterText(i, "%t", sBuffer, attackerName);
-					}
-				}
-
-				else if (knife && iKnifeConfig > 0)
-				{
-					if (strcmp(sKnifeSound, "", false) != 0 && (iKnifeConfig & 1) || ((iKnifeConfig & 2) && attackerClient == i) || ((iKnifeConfig & 4) && victimClient == i))
-						EmitSoundCustom(i, sKnifeSound, _, _, _, _, g_fVolume);
-
-					if (g_iShowText[i] && ((iKnifeConfig & 8) || ((iKnifeConfig & 16) && attackerClient == i) || ((iKnifeConfig & 32) && victimClient == i)))
-						PrintCenterText(i, "%t", "knife", attackerName, victimName);
-				}
-
-				else if (grenade && iGrenadeConfig > 0)
-				{
-					if (strcmp(sGrenadeSound, "", false) != 0 && (iGrenadeConfig & 1) || ((iGrenadeConfig & 2) && attackerClient == i) || ((iGrenadeConfig & 4) && victimClient == i))
-						EmitSoundCustom(i, sGrenadeSound, _, _, _, _, g_fVolume);
-
-					if (g_iShowText[i] && ((iGrenadeConfig & 8) || ((iGrenadeConfig & 16) && attackerClient == i) || ((iGrenadeConfig & 32) && victimClient == i)))
-						PrintCenterText(i, "%t", "grenade", attackerName, victimName);
-				}
-
-				else if (combo && iComboScore < MAX_NUM_KILLS && iComboConfig > 0)
-				{
-					if (strcmp(sComboSound, "", false) != 0 && (iComboConfig & 1) || ((iComboConfig & 2) && attackerClient == i) || ((iComboConfig & 4) && victimClient == i))
-						EmitSoundCustom(i, sComboSound, _, _, _, _, g_fVolume);
-
-					if (g_iShowText[i] && g_iComboScore[attackerClient] < MAX_NUM_KILLS && ((iComboConfig & 8) || ((iComboConfig & 16) && attackerClient == i) || ((iComboConfig & 32) && victimClient == i)))
-					{
-						Format(sBuffer, sizeof(sBuffer), "combo %i", g_iComboScore[attackerClient]);
-						PrintCenterText(i, "%t", sBuffer, attackerName);
-					}
-				}
-
-				else
-				{
-					// Clamp translations and sounds to 26 with a random value if they exceed it every 2 kills
-					int killNum = g_iConsecutiveKills[attackerClient];
-					bool bOver = killNum > 26 && killNum % 2 == 0;
-					if (bOver)
-					{
-						killNum = PickRandomSoundValue();
-						sKillSound = killSound[soundPreset][killNum];
-					}
-
-					if (iConsecutiveKills < MAX_NUM_KILLS && strcmp(sKillSound, "", false) != 0 && (iKillConfig & 1) || ((iKillConfig & 2) && attackerClient == i) || ((iKillConfig & 4) && victimClient == i) || bOver)
-						EmitSoundCustom(i, sKillSound, _, _, _, _, g_fVolume);
-
-					if (g_iShowText[i] && g_iConsecutiveKills[attackerClient] < MAX_NUM_KILLS && ((iKillConfig & 8) || ((iKillConfig & 16) && attackerClient == i) || ((iKillConfig & 32) && victimClient == i) || bOver))
-					{
-						Format(sBuffer, sizeof(sBuffer), "killsound %i", killNum);
-						PrintCenterText(i, "%t", sBuffer, attackerName);
-					}
-				}
-			}
-		}
+		OnEnemyKilled(event, attacker, victim, attackerName, victimName);
 	}
-	g_iConsecutiveKills[victimClient] = 0;
-	g_iConsecutiveHeadshots[victimClient] = 0;
 
-	return Plugin_Continue;
+	g_iConsecutiveKills[victim] = 0;
+	g_iConsecutiveHeadshots[victim] = 0;
 }
 
-// ######## ##     ## ##    ##  ######  ######## ####  #######  ##    ##  ######  
-// ##       ##     ## ###   ## ##    ##    ##     ##  ##     ## ###   ## ##    ## 
-// ##       ##     ## ####  ## ##          ##     ##  ##     ## ####  ## ##       
-// ######   ##     ## ## ## ## ##          ##     ##  ##     ## ## ## ##  ######  
-// ##       ##     ## ##  #### ##          ##     ##  ##     ## ##  ####       ## 
-// ##       ##     ## ##   ### ##    ##    ##     ##  ##     ## ##   ### ##    ## 
+// ######## ##     ## ##    ##  ######  ######## ####  #######  ##    ##  ######
+// ##       ##     ## ###   ## ##    ##    ##     ##  ##     ## ###   ## ##    ##
+// ##       ##     ## ####  ## ##          ##     ##  ##     ## ####  ## ##
+// ######   ##     ## ## ## ## ##          ##     ##  ##     ## ## ## ##  ######
+// ##       ##     ## ##  #### ##          ##     ##  ##     ## ##  ####       ##
+// ##       ##     ## ##   ### ##    ##    ##     ##  ##     ## ##   ### ##    ##
 // ##        #######  ##    ##  ######     ##    ####  #######  ##    ##  ######
 
+// Updates the streaks of the attacker, then announces the kill to each sound set
+void OnEnemyKilled(Event event, int attacker, int victim, const char[] attackerName, const char[] victimName)
+{
+	g_iTotalKills++;
+	g_iConsecutiveKills[attacker]++;
+
+	bool headshot = false;
+	bool knife = false;
+	bool grenade = false;
+
+	if (g_evGameEngine == Engine_TF2)
+	{
+		int customkill = event.GetInt("customkill");
+		headshot = customkill == 1;
+		knife = customkill == 2;
+	}
+	else
+	{
+		if (g_evGameEngine == Engine_CSS || g_evGameEngine == Engine_CSGO)
+			headshot = event.GetBool("headshot");
+
+		char weapon[64];
+		event.GetString("weapon", weapon, sizeof(weapon));
+		GetWeaponKind(weapon, knife, grenade);
+	}
+
+	if (headshot)
+		g_iConsecutiveHeadshots[attacker]++;
+
+	float fNow = GetEngineTime();
+	bool combo = g_fLastKillTime[attacker] != -1.0 && (fNow - g_fLastKillTime[attacker]) <= g_cvar_ComboTime.FloatValue;
+	g_fLastKillTime[attacker] = fNow;
+	g_iComboScore[attacker] = combo ? g_iComboScore[attacker] + 1 : 1;
+
+	bool firstblood = g_iTotalKills == 1;
+
+	SoundEntry entry;
+	char phrase[32];
+	for (int set = 0; set < g_iNumSets; set++)
+	{
+		if (FindKillSound(set, attacker, firstblood, headshot, knife, grenade, combo, entry, phrase, sizeof(phrase)))
+			AnnounceToSet(set, entry, phrase, attacker, victim, attackerName, victimName);
+	}
+}
+
+// Picks the sound of a set announcing a kill, by priority:
+// first blood, headshot streak, headshot, knife, grenade, combo, kill streak
+bool FindKillSound(int set, int attacker, bool firstblood, bool headshot, bool knife, bool grenade, bool combo, SoundEntry entry, char[] phrase, int maxlen)
+{
+	if (firstblood && GetSetSound(set, Sound_FirstBlood, 0, entry))
+	{
+		strcopy(phrase, maxlen, "first blood");
+		return true;
+	}
+
+	if (headshot)
+	{
+		int headshots = g_iConsecutiveHeadshots[attacker];
+		if (GetSetSound(set, Sound_Headshot, headshots, entry))
+		{
+			FormatEx(phrase, maxlen, "headshot %d", headshots);
+			return true;
+		}
+
+		// "0" is the headshot without a streak sound
+		if (GetSetSound(set, Sound_Headshot, 0, entry))
+		{
+			strcopy(phrase, maxlen, "headshot");
+			return true;
+		}
+	}
+
+	if (knife && GetSetSound(set, Sound_Knife, 0, entry))
+	{
+		strcopy(phrase, maxlen, "knife");
+		return true;
+	}
+
+	if (grenade && GetSetSound(set, Sound_Grenade, 0, entry))
+	{
+		strcopy(phrase, maxlen, "grenade");
+		return true;
+	}
+
+	if (combo && GetSetSound(set, Sound_Combo, g_iComboScore[attacker], entry))
+	{
+		FormatEx(phrase, maxlen, "combo %d", g_iComboScore[attacker]);
+		return true;
+	}
+
+	int kills = g_iConsecutiveKills[attacker];
+	if (!GetSetSound(set, Sound_Kill, kills, entry))
+	{
+		// Past the last kill streak sound, replay a random one every 2 kills
+		ArrayList killNums = g_aSetKillNums[set];
+		int count = killNums.Length;
+		if (!count || kills % 2 != 0 || kills < killNums.Get(count - 1))
+			return false;
+
+		kills = killNums.Get(GetRandomInt(0, count - 1));
+		GetSetSound(set, Sound_Kill, kills, entry);
+	}
+
+	FormatEx(phrase, maxlen, "killsound %d", kills);
+	return true;
+}
+
+// Tells whether the weapon of a kill makes it a knife or a grenade kill on this game
+void GetWeaponKind(const char[] weapon, bool &knife, bool &grenade)
+{
+	switch (g_evGameEngine)
+	{
+		case Engine_CSS:
+		{
+			grenade = StrEqual(weapon, "hegrenade", false) || StrEqual(weapon, "smokegrenade", false) || StrEqual(weapon, "flashbang", false);
+			knife = !grenade && StrContains(weapon, "knife", false) != -1;
+		}
+		case Engine_CSGO:
+		{
+			grenade = StrEqual(weapon, "inferno", false) || StrEqual(weapon, "hegrenade", false) || StrEqual(weapon, "flashbang", false) || StrEqual(weapon, "decoy", false) || StrEqual(weapon, "smokegrenade", false);
+			knife = !grenade && (StrContains(weapon, "knife", false) != -1 || StrContains(weapon, "bayonet", false) != -1);
+		}
+		case Engine_DODS:
+		{
+			grenade = StrEqual(weapon, "riflegren_ger", false) || StrEqual(weapon, "riflegren_us", false) || StrEqual(weapon, "frag_ger", false) || StrEqual(weapon, "frag_us", false) || StrEqual(weapon, "smoke_ger", false) || StrEqual(weapon, "smoke_us", false);
+			knife = !grenade && (StrEqual(weapon, "spade", false) || StrEqual(weapon, "amerknife", false) || StrEqual(weapon, "punch", false));
+		}
+		case Engine_HL2DM:
+		{
+			grenade = StrEqual(weapon, "grenade_frag", false);
+			knife = !grenade && (StrEqual(weapon, "stunstick", false) || StrEqual(weapon, "crowbar", false));
+		}
+	}
+}
+
+// Announces a sound without streaks (selfkill, teamkill) to every sound set
+void AnnounceToAllSets(SoundType type, const char[] phrase, int attacker, int victim, const char[] arg1, const char[] arg2)
+{
+	SoundEntry entry;
+	for (int set = 0; set < g_iNumSets; set++)
+	{
+		if (GetSetSound(set, type, 0, entry))
+			AnnounceToSet(set, entry, phrase, attacker, victim, arg1, arg2);
+	}
+}
+
+// Plays the sound and prints the text of an entry to the human players using its set, as its config targets
+void AnnounceToSet(int set, const SoundEntry entry, const char[] phrase, int attacker, int victim, const char[] arg1, const char[] arg2)
+{
+	int soundTargets = entry.path[0] ? entry.config & CONFIG_TARGET_BITS : 0;
+	int textTargets = (entry.config >> CONFIG_TEXT_SHIFT) & CONFIG_TARGET_BITS;
+	if (textTargets && !TranslationPhraseExists(phrase))
+	{
+		LogError("Missing translation phrase \"%s\", no text printed.", phrase);
+		textTargets = 0;
+	}
+
+	if (!soundTargets && !textTargets)
+		return;
+
+	int clients[MAXPLAYERS];
+	int numClients = 0;
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		if (g_iSoundPreset[client] != set || !IsClientInGame(client) || IsFakeClient(client))
+			continue;
+
+		if (g_bSound[client] && IsTarget(soundTargets, client, attacker, victim))
+			clients[numClients++] = client;
+
+		if (g_bShowText[client] && IsTarget(textTargets, client, attacker, victim))
+			PrintCenterText(client, "%t", phrase, arg1, arg2);
+	}
+
+	if (numClients)
+		EmitSound(clients, numClients, entry.path, .volume = g_cvar_Volume.FloatValue);
+}
+
+bool IsTarget(int targets, int client, int attacker, int victim)
+{
+	return (targets & 1) || ((targets & 2) && client == attacker) || ((targets & 4) && client == victim);
+}
+
 // Resets combo/headshot streaks (not kill streaks though) on new round
-public void InitializeRound()
+void InitializeRound()
 {
 	g_iTotalKills = 0;
-	for (int i = 1; i <= MaxClients; i++) 
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		g_iConsecutiveHeadshots[i] = 0;
 		g_fLastKillTime[i] = -1.0;
 	}
 }
 
+// Loads QuakeSetsList config to check for sound sets
+void LoadQuakeSetConfig()
+{
+	for (int i = 0; i < g_iNumSets; i++)
+	{
+		delete g_smSetSounds[i];
+		delete g_aSetKillNums[i];
+	}
+	g_iNumSets = 0;
+
+	char sConfigFile[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, sConfigFile, sizeof(sConfigFile), PATH_CONFIG_QUAKE_SET);
+
+	KeyValues kv = new KeyValues("SetsList");
+	if (!kv.ImportFromFile(sConfigFile))
+	{
+		delete kv;
+		SetFailState("ImportFromFile() failed!");
+	}
+
+	if (!kv.GotoFirstSubKey())
+	{
+		delete kv;
+		SetFailState("GotoFirstSubKey() failed!");
+	}
+
+	do
+	{
+		char sSection[64];
+		kv.GetSectionName(sSection, sizeof(sSection));
+
+		if (g_iNumSets >= MAX_NUM_SETS)
+		{
+			LogError("Too many sound sets, \"%s\" and the next ones are ignored (max %d).", sSection, MAX_NUM_SETS);
+			break;
+		}
+
+		kv.GetString("name", g_sSetName[g_iNumSets], sizeof(g_sSetName[]));
+		if (!g_sSetName[g_iNumSets][0])
+		{
+			LogError("Could not find \"name\" in \"%s\"", sSection);
+			continue;
+		}
+
+		BuildPath(Path_SM, sConfigFile, sizeof(sConfigFile), "%s/%s.cfg", PATH_CONFIG_QUAKE_SOUNDS, g_sSetName[g_iNumSets]);
+		PrintToServer("[SM] Quake Sounds: Loading sound set config '%s'.", sConfigFile);
+		LoadSet(sConfigFile, g_iNumSets);
+		g_iNumSets++;
+	} while (kv.GotoNextKey(false));
+
+	delete kv;
+}
+
+// Loads sound file paths and configs for each sound set
+void LoadSet(const char[] setFile, int set)
+{
+	g_smSetSounds[set] = new StringMap();
+	g_aSetKillNums[set] = new ArrayList();
+
+	KeyValues kv = new KeyValues("SoundSet");
+	if (!kv.ImportFromFile(setFile))
+	{
+		PrintToServer("[SM] Quake Sounds: Cannot parse '%s', file not found or incorrectly structured!", setFile);
+		delete kv;
+		return;
+	}
+
+	char sNum[16];
+	for (SoundType type = Sound_Headshot; type < Sound_Count; type++)
+	{
+		kv.Rewind();
+		if (!kv.JumpToKey(g_sSoundSections[type]))
+		{
+			PrintToServer("[SM] Quake Sounds: '%s' section missing in %s.", g_sSoundSections[type], setFile);
+			continue;
+		}
+
+		bool numbered = type <= Sound_Combo;
+		if (kv.GotoFirstSubKey() != numbered)
+		{
+			PrintToServer("[SM] Quake Sounds: '%s' section not configured correctly in %s.", g_sSoundSections[type], setFile);
+			continue;
+		}
+
+		if (!numbered)
+		{
+			LoadSound(kv, set, type, 0, setFile);
+			continue;
+		}
+
+		do
+		{
+			kv.GetSectionName(sNum, sizeof(sNum));
+			int num = StringToInt(sNum);
+			if (num >= 0 && LoadSound(kv, set, type, num, setFile) && type == Sound_Kill)
+				g_aSetKillNums[set].Push(num);
+		} while (kv.GotoNextKey());
+	}
+
+	g_aSetKillNums[set].Sort(Sort_Ascending, Sort_Integer);
+	delete kv;
+}
+
+// Stores the sound of the current key, precached and added to the downloads.
+// Sounds turned off (config 0) are skipped, so they are not downloaded either.
+bool LoadSound(KeyValues kv, int set, SoundType type, int num, const char[] setFile)
+{
+	SoundEntry entry;
+	entry.config = kv.GetNum("config", 9);
+	if (!entry.config)
+		return false;
+
+	kv.GetString("sound", entry.path, sizeof(entry.path));
+	if (entry.path[0])
+	{
+		char sDownload[PLATFORM_MAX_PATH];
+		FormatEx(sDownload, sizeof(sDownload), "sound/%s", entry.path);
+		if (!FileExists(sDownload, true))
+		{
+			PrintToServer("[SM] Quake Sounds: File '%s' specified in '%s' does not exist in '%s', ignoring.", sDownload, g_sSoundSections[type], setFile);
+			return false;
+		}
+
+		AddFileToDownloadsTable(sDownload);
+		PrecacheSoundCustom(entry.path, sizeof(entry.path));
+	}
+
+	char sKey[16];
+	FormatSoundKey(sKey, sizeof(sKey), type, num);
+	g_smSetSounds[set].SetArray(sKey, entry, sizeof(entry));
+	return true;
+}
+
+bool GetSetSound(int set, SoundType type, int num, SoundEntry entry)
+{
+	char sKey[16];
+	FormatSoundKey(sKey, sizeof(sKey), type, num);
+	return g_smSetSounds[set].GetArray(sKey, entry, sizeof(entry));
+}
+
+void FormatSoundKey(char[] buffer, int maxlen, SoundType type, int num)
+{
+	FormatEx(buffer, maxlen, "%d:%d", type, num);
+}
+
 // Adds specified sound to cache (and for CSGO)
-stock void PrecacheSoundCustom(char[] soundFile, int maxLength)
+void PrecacheSoundCustom(char[] soundFile, int maxLength)
 {
 	if (g_evGameEngine == Engine_CSGO)
 	{
@@ -1064,82 +790,42 @@ stock void PrecacheSoundCustom(char[] soundFile, int maxLength)
 	}
 }
 
-// Custom EmitSound to allow compatibility with all game engines
-stock void EmitSoundCustom(int client, const char[] sound, int entity=SOUND_FROM_PLAYER, int channel=SNDCHAN_AUTO, int level=SNDLEVEL_NORMAL, int flags=SND_NOFLAGS, float volume=SNDVOL_NORMAL, int pitch=SNDPITCH_NORMAL, int speakerentity=-1, const float origin[3]=NULL_VECTOR, const float dir[3]=NULL_VECTOR, bool updatePos=true, float soundtime=0.0)
+void LoadDefaultPreferences(int client)
 {
-	int iClients[1];
-	iClients[0] = client;
-	EmitSound(iClients, 1, sound, entity, channel, level, flags, volume, pitch, speakerentity, origin, dir, updatePos, soundtime);
+	g_bShowText[client] = g_cvar_Text.BoolValue;
+	g_bSound[client] = g_cvar_Sound.BoolValue;
+	g_iSoundPreset[client] = ClampSoundPreset(g_cvar_SoundPreset.IntValue - 1);
 }
 
-public void ReadClientCookies(int client)
+int ClampSoundPreset(int preset)
+{
+	return (preset >= 0 && preset < g_iNumSets) ? preset : 0;
+}
+
+void ReadClientCookies(int client)
 {
 	char sValue[32];
-	GetClientCookie(client, g_hQuakeSettings, sValue, sizeof(sValue));
-	
-	if (strlen(sValue) >= 5) //  Format is "0|0|0"
+	g_cQuakeSettings.Get(client, sValue, sizeof(sValue));
+
+	// Format is "0|0|0"
+	char sParts[3][16];
+	if (ExplodeString(sValue, "|", sParts, sizeof(sParts), sizeof(sParts[])) != 3)
 	{
-		char sParts[3][16];
-		int numParts = ExplodeString(sValue, "|", sParts, sizeof(sParts), sizeof(sParts[]));
-		
-		if (numParts >= 1) {
-			g_iShowText[client] = StringToInt(sParts[0]);
-		}
-		if (numParts >= 2) {
-			g_iSound[client] = StringToInt(sParts[1]);
-		}
-		if (numParts >= 3) {
-			int preset = StringToInt(sParts[2]);
-			g_iSoundPreset[client] = (preset >= 0 && preset < g_iNumSets) ? preset : 0;
-		}
+		LoadDefaultPreferences(client);
+		return;
 	}
-	else
-	{
-		// Default values
-		g_iShowText[client] = GetConVarInt(g_cvar_Text);
-		g_iSound[client] = GetConVarInt(g_cvar_Sound);
-		int defaultPreset = GetConVarInt(g_cvar_SoundPreset) - 1;
-		g_iSoundPreset[client] = (defaultPreset >= 0 && defaultPreset < g_iNumSets) ? defaultPreset : 0;
-	}
+
+	g_bShowText[client] = StringToInt(sParts[0]) != 0;
+	g_bSound[client] = StringToInt(sParts[1]) != 0;
+	g_iSoundPreset[client] = ClampSoundPreset(StringToInt(sParts[2]));
 }
 
-public void SaveClientCookies(int client)
+void SaveClientCookies(int client)
 {
 	if (!AreClientCookiesCached(client) || IsFakeClient(client))
 		return;
 
 	char sValue[32];
-	Format(sValue, sizeof(sValue), "%d|%d|%d", g_iShowText[client], g_iSound[client], g_iSoundPreset[client]);
-	SetClientCookie(client, g_hQuakeSettings, sValue);
-}
-
-stock int PickRandomSoundValue()
-{
-	int iRandom = GetRandomInt(0, 10);
-	switch (iRandom)
-	{
-		case 0:
-			iRandom = 4;
-		case 1:
-			iRandom = 6;
-		case 2:
-			iRandom = 8;
-		case 3:
-			iRandom = 10;
-		case 4:
-			iRandom = 14;
-		case 5:
-			iRandom = 16;
-		case 6:
-			iRandom = 18;
-		case 7:
-			iRandom = 20;
-		case 8:
-			iRandom = 22;
-		case 9:
-			iRandom = 24;
-		case 10:
-			iRandom = 26;
-	}
-	return iRandom;
+	FormatEx(sValue, sizeof(sValue), "%d|%d|%d", g_bShowText[client], g_bSound[client], g_iSoundPreset[client]);
+	g_cQuakeSettings.Set(client, sValue);
 }
