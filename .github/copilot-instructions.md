@@ -68,12 +68,14 @@ The CI/CD pipeline automatically:
 5. **Translation System**: Multi-language message support
 
 ### Key Global Variables
-- `g_sSetsName[]`: Available sound set names
+- `g_sSetName[]`: Available sound set names
+- `g_smSetSounds[]`: One `StringMap` per set, `"<SoundType>:<num>"` -> `SoundEntry` (path + config). Only the configured sounds are stored; read them with `GetSetSound()`
+- `g_aSetKillNums[]`: Configured `killsound` numbers of each set, used to replay a random one past the last streak
 - `g_iConsecutiveKills[]`: Player kill streak tracking
 - `g_iConsecutiveHeadshots[]`: Player headshot streak tracking
-- `g_iSound[]`, `g_iShowText[]`: Player preferences
-- Sound arrays: `headshotSound[][]`, `killSound[][]`, etc.
-- Config arrays: `headshotConfig[][]`, `killConfig[][]`, etc.
+- `g_bSound[]`, `g_bShowText[]`, `g_iSoundPreset[]`: Player preferences
+
+Never go back to fixed `[set][kill][PLATFORM_MAX_PATH]` arrays: global arrays are reserved in the plugin data section whatever the config holds (the old `[255][999][256]` arrays made the plugin use ~400 MB of RAM).
 
 ### Configuration System Explanation
 
@@ -174,13 +176,11 @@ Multi-language support:
 ## Common Development Tasks
 
 ### Adding New Sound Events
-1. Add sound file paths to global arrays
-2. Add config arrays for the new event
-3. Create config parsing in `LoadQuakeSetConfig()`
-4. Add event hook in `HookGameEvents()`
-5. Implement event handler function
-6. Update configuration files with new sounds
-7. Add translation phrases
+1. Add a value to the `SoundType` enum (numbered sounds stay before `Sound_FirstBlood`, and `Sound_LastNumbered` must point to the last numbered type) and its section name to `g_sSoundSections[]`; `LoadSet()` then parses it
+2. Add event hook in `HookGameEvents()`
+3. Implement event handler function, announcing with `GetSetSound()` + `AnnounceToSet()`
+4. Update configuration files with new sounds
+5. Add translation phrases
 
 ### Adding New Sound Set
 1. Add new entry to `sets.cfg`
