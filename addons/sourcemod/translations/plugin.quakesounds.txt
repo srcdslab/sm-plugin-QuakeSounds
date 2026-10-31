@@ -7,6 +7,9 @@
 		"de"		"{1} Kopfschuss"
 		"fr"		"{1} aime les grosses têtes !!"
 		"pt"		"{1} conseguiu um Tiro na Cabeça"
+		"ru"		"Хедшот от {1}"
+		"es"		"Headshot de {1}"
+		"chi"		"{1} 爆头"
 	}
 	"headshot 1"
 	{
@@ -15,6 +18,9 @@
 		"de"		"{1} Kopfschuss"
 		"fr"		"{1} aime les grosses têtes !!"
 		"pt"		"{1} conseguiu um Tiro na Cabeça"
+		"ru"		"Хедшот от {1}"
+		"es"		"Headshot de {1}"
+		"chi"		"{1} 爆头"
 	}
 	"headshot 3"
 	{
@@ -23,14 +29,20 @@
 		"de"		"{1} Hattrick"
 		"fr"		"Triplé de {1} !!"
 		"pt"		"{1} tem Habilidade com Cabeças"
+		"ru"		"Хет-трик от {1}"
+		"es"		"Hat-trick de {1}"
+		"chi"		"{1} 帽子戏法"
 	}
 	"headshot 5"
 	{
 		"#format"	"{1:s}"
 		"en"		"{1} Head Hunter"
 		"de"		"{1} Kopfjäger"
-		"fr"		"{1} Chasseur de Tête"
+		"fr"		"{1} Chasseur de têtes"
 		"pt"		"{1} Caçador de Cabeças"
+		"ru"		"{1} — охотник за головами"
+		"es"		"{1}, cazador de cabezas"
+		"chi"		"{1} 猎头者"
 	}
 	"killsound 4"
 	{
@@ -39,6 +51,9 @@
 		"de"		"{1} dominiert"
 		"fr"		"{1} maitrise grave !!"
 		"pt"		"{1} está Dominando!"
+		"ru"		"{1} доминирует"
+		"es"		"{1} está dominando"
+		"chi"		"{1} 主宰比赛"
 	}
 	"killsound 6"
 	{
@@ -47,6 +62,9 @@
 		"de"		"{1} randaliert"
 		"fr"		"{1} déchire tout !!"
 		"pt"		"{1} está Violento!"
+		"ru"		"{1} буйствует"
+		"es"		"{1} está arrasando"
+		"chi"		"{1} 暴走了"
 	}
 	"killsound 8"
 	{
@@ -55,6 +73,9 @@
 		"de"		"{1} ist auf einem Amoklauf"
 		"fr"		"{1} est bien le meilleur !!"
 		"pt"		"{1} está se Divertindo!"
+		"ru"		"{1} устраивает бойню"
+		"es"		"{1} está en racha asesina"
+		"chi"		"{1} 大杀特杀"
 	}
 	"killsound 10"
 	{
@@ -63,6 +84,9 @@
 		"de"		"{1} hat einen Monster Kill"
 		"fr"		"{1} invente des frags !!"
 		"pt"		"{1} está numa Matança Monstruosa!"
+		"ru"		"{1} делает монстр-килл"
+		"es"		"{1} acaba de lograr una matanza monstruosa"
+		"chi"		"{1} 妖怪般的杀戮"
 	}
 	"killsound 14"
 	{
@@ -70,7 +94,10 @@
 		"en"		"{1} is Unstoppable"
 		"de"		"{1} ist nicht aufzuhalten"
 		"fr"		"{1} est intenable !!"
-		"pt"		"{1} não PÁRA!!"
+		"pt"		"{1} não PARA!!"
+		"ru"		"{1} не остановить"
+		"es"		"{1} es imparable"
+		"chi"		"{1} 无人能挡"
 	}
 	"killsound 16"
 	{
@@ -79,6 +106,9 @@
 		"de"		"{1} Ultrakill"
 		"fr"		"{1} va tous les dégouter !!"
 		"pt"		"{1} é um Assassino Profissional!"
+		"ru"		"Ультракилл от {1}"
+		"es"		"Ultrakill de {1}"
+		"chi"		"{1} 疯狂杀戮"
 	}
 	"killsound 18"
 	{
@@ -87,6 +117,9 @@
 		"de"		"{1} gleicht einem Gott"
 		"fr"		"{1} est un Dieu sur terre !!"
 		"pt"		"{1} é como um DEUS!"
+		"ru"		"{1} подобен богу"
+		"es"		"{1} es como un dios"
+		"chi"		"{1} 如同神一般"
 	}
 	"killsound 20"
 	{
@@ -94,7 +127,10 @@
 		"en"		"{1} is Wicked Sick"
 		"de"		"{1} ist ernsthaft krank im Kopf"
 		"fr"		"{1} est un Foufou !!"
-		"pt"		"{1} está com uma Doença Vingativa!"
+		"pt"		"{1} está Insano!"
+		"ru"		"{1} творит безумие"
+		"es"		"{1} es una bestia"
+		"chi"		"{1} 变态杀戮"
 	}
 	"killsound 22"
 	{
@@ -103,14 +139,20 @@
 		"de"		"{1} ist beeindruckend"
 		"fr"		"{1} est impressionnant !!"
 		"pt"		"{1} é Impressionante!"
+		"ru"		"{1} впечатляет"
+		"es"		"{1} es impresionante"
+		"chi"		"{1} 令人惊叹"
 	}
 	"killsound 24"
 	{
 		"#format"	"{1:s}"
 		"en"		"Ludicrous Kill by {1}"
-		"de"		"Irsinniger Kill von {1}"
-		"fr"		"{1} est mort de rire !!"
+		"de"		"Irrsinniger Kill von {1}"
+		"fr"		"Kill insensé de {1} !!"
 		"pt"		"Genocídio Absurdo por {1}"
+		"ru"		"Безумное убийство от {1}"
+		"es"		"Asesinato demencial por {1}"
+		"chi"		"{1} 的离谱击杀"
 	}
 	"killsound 26"
 	{
@@ -119,6 +161,9 @@
 		"de"		"Heilige Scheiße, {1} ist wahnsinnig"
 		"fr"		"Incroyable, {1} est un dur à cuire"
 		"pt"		"Puta Merda, {1} é muito foda!"
+		"ru"		"ОХРЕНЕТЬ, {1} просто зверь"
+		"es"		"MADRE MÍA, {1} es un crack"
+		"chi"		"我的天，{1} 超越神了"
 	}
 	"combo 2"
 	{
@@ -127,14 +172,20 @@
 		"de"		"{1} hat gerade zwei auf einmal niedergestreckt"
 		"fr"		"{1} vient de tuer 2 personnes d'affilée"
 		"pt"		"{1} acabou de conseguir uma Morte Dupla"
+		"ru"		"{1} делает двойное убийство"
+		"es"		"{1} acaba de conseguir un doble asesinato"
+		"chi"		"{1} 双杀"
 	}
 	"combo 3"
 	{
 		"#format"	"{1:s}"
 		"en"		"{1} just pulled off a Triple Kill"
-		"de"		"{1} hat gerade drei auf einem niedergestreckt"
+		"de"		"{1} hat gerade drei auf einmal niedergestreckt"
 		"fr"		"{1} vient de tuer 3 personnes d'affilée"
 		"pt"		"{1} acabou de conseguir uma Morte Tripla" 
+		"ru"		"{1} делает тройное убийство"
+		"es"		"{1} acaba de conseguir un triple asesinato"
+		"chi"		"{1} 三杀"
 	}
 	"combo 4"
 	{
@@ -143,6 +194,9 @@
 		"de"		"{1} hat gerade vier auf einmal niedergestreckt"
 		"fr"		"{1} vient de faire un Quadruple Combo"
 		"pt"		"{1} acabou de conseguir uma Morte Quádrupla"
+		"ru"		"{1} делает комбо из четырёх"
+		"es"		"{1} acaba de conseguir un combo cuádruple"
+		"chi"		"{1} 四连杀"
 	}
 	"combo 5"
 	{
@@ -151,14 +205,20 @@
 		"de"		"{1} ist eine Comboschlampe"
 		"fr"		"{1} est une putain du combo"
 		"pt"		"{1} é o Mestre dos Combos!"
+		"ru"		"{1} — комбо-маньяк"
+		"es"		"{1} es un adicto a los combos"
+		"chi"		"{1} 连杀狂魔"
 	} 
 	"first blood"
 	{
 		"#format"	"{1:s}"
 		"en"		"{1} drew First Blood!"
 		"de"		"{1} hat das erste Blut vergossen!"
-		"fr"		"{1} a fait la 1ere victime!"
+		"fr"		"{1} a fait la première victime !"
 		"pt"		"{1} conseguiu o Primeiro Sangue!"
+		"ru"		"{1} пролил первую кровь!"
+		"es"		"¡{1} derramó la primera sangre!"
+		"chi"		"{1} 拿下第一滴血！"
 	}	
 	"grenade"
 	{
@@ -167,6 +227,9 @@
 		"de"		"{1} sprengte {2} mit einer Granate"
 		"fr"		"{1} a fait exploser {2} avec une grenade"
 		"pt"		"{1} detonou {2} com uma granada"
+		"ru"		"{1} подорвал {2} гранатой"
+		"es"		"{1} hizo volar a {2} con una granada"
+		"chi"		"{1} 用手雷炸死了 {2}"
 	}
 	"selfkill"
 	{
@@ -175,13 +238,19 @@
 		"de"		"{1} hat sich selbst erniedrigt"
 		"fr"		"{1} s'est humilié lui-même"
 		"pt"		"{1} se humilhou"
+		"ru"		"{1} опозорился"
+		"es"		"{1} se humilló a sí mismo"
+		"chi"		"{1} 自取其辱"
 	}
 	"round play"
 	{
 		"en"		"Play"
 		"de"		"Spielt"
-		"fr"		"Prépare toi !!"
+		"fr"		"Prépare-toi !!"
 		"pt"		"Bom Jogo!"
+		"ru"		"Играем!"
+		"es"		"¡A jugar!"
+		"chi"		"开始！"
 	}
 	"knife"
 	{
@@ -190,56 +259,80 @@
 		"de"		"{2} wurde durch einen Messerkill von {1} bloßgestellt"
 		"fr"		"{2} a été découpé par {1}"
 		"pt"		"{2} foi humilhado com uma faca por {1}"
+		"ru"		"{1} опозорил {2} ножом"
+		"es"		"{2} fue humillado con el cuchillo por {1}"
+		"chi"		"{2} 被 {1} 用刀羞辱了"
 	}
 	"teamkill"
 	{
 		"#format"	"{1:s},{2:s}"
-		"en"		"{1} just victimized his team teammate {2}"
-		"de"		"{1} hat gerade seinen Teamkamerad {2} niedergestreckt"
+		"en"		"{1} just victimized his teammate {2}"
+		"de"		"{1} hat gerade seinen Teamkameraden {2} niedergestreckt"
 		"fr"		"{1} a tué son coéquipier {2}"
 		"pt"		"{1} acabou de matar o amigo {2}"
+		"ru"		"{1} убил своего союзника {2}"
+		"es"		"{1} acaba de matar a su compañero de equipo {2}"
+		"chi"		"{1} 刚刚击杀了队友 {2}"
 	}
 	"announce message"
 	{
 		"en"		"Say !quake or /quake to set your quake sounds preferences"
-		"de"		"Tippe !quake oder /quake um deine Quake Sounds einzustellen"
-		"fr"		"Tapez !quake ou /quake Pour enregistrer vos préférences"
+		"de"		"Tippe !quake oder /quake, um deine Quake-Sounds einzustellen"
+		"fr"		"Tapez !quake ou /quake pour enregistrer vos préférences"
 		"pt"		"Digite !quake ou /quake para configurar Sons Quake"
+		"ru"		"Введите !quake или /quake, чтобы настроить звуки Quake"
+		"es"		"Escribe !quake o /quake para configurar tus sonidos Quake"
+		"chi"		"输入 !quake 或 /quake 设置你的 Quake 音效"
 	}
 	"quake menu"
 	{
 		"en"		"Quake Menu"
-		"de"		"Quake Menue"
+		"de"		"Quake-Menü"
 		"fr"		"Menu Quake"
 		"pt"		"Menu Quake"
+		"ru"		"Меню Quake"
+		"es"		"Menú Quake"
+		"chi"		"Quake 菜单"
 	}
 	"enable text"
 	{
 		"en"		"Enable text display"
-		"de"		"Text anzeige aktivieren"
-		"fr"		"Utilisez l'affichage des textes"
+		"de"		"Textanzeige aktivieren"
+		"fr"		"Activer l'affichage du texte"
 		"pt"		"Ativar anúncios de texto"
+		"ru"		"Включить показ текста"
+		"es"		"Activar texto en pantalla"
+		"chi"		"启用文字显示"
 	}
 	"disable text"
 	{
 		"en"		"Disable text display"
-		"de"		"Text anzeige deaktivieren"
-		"fr"		"Enlevez l'affichage des textes"
+		"de"		"Textanzeige deaktivieren"
+		"fr"		"Désactiver l'affichage du texte"
 		"pt"		"Desativar anúncios de texto"
+		"ru"		"Отключить показ текста"
+		"es"		"Desactivar texto en pantalla"
+		"chi"		"禁用文字显示"
 	}
 	"sounds enable"
 	{
 		"en"		"Enable sounds"
-		"de"		"Aktivieren von Tönen"
+		"de"		"Töne aktivieren"
 		"fr"		"Activer les sons"
-		"pt"		"Activação de sons"
+		"pt"		"Ativar sons"
+		"ru"		"Включить звуки"
+		"es"		"Activar sonidos"
+		"chi"		"启用音效"
 	}
 	"sounds disable"
 	{
 		"en"		"Disable sounds"
-		"de"		"Töne stumm schalten"
+		"de"		"Töne stummschalten"
 		"fr"		"Désactiver les sons"
-		"pt"		"Sons de mudo"
+		"pt"		"Desativar sons"
+		"ru"		"Отключить звуки"
+		"es"		"Desactivar sonidos"
+		"chi"		"禁用音效"
 	}
 	"sound pack"
 	{
@@ -247,6 +340,9 @@
 		"de"		"Soundpaket"
 		"fr"		"Pack de sons"
 		"pt"		"Pacote de som"
+		"ru"		"Набор звуков"
+		"es"		"Paquete de sonidos"
+		"chi"		"音效包"
 	}
 	"male"
 	{
@@ -254,6 +350,9 @@
 		"de"		"Mann"
 		"fr"		"Homme"
 		"pt"		"Homem"
+		"ru"		"Мужской"
+		"es"		"Hombre"
+		"chi"		"男声"
 	}
 	"female"
 	{
@@ -261,5 +360,8 @@
 		"de"		"Frau"
 		"fr"		"Femme"
 		"pt"		"Mulher"
+		"ru"		"Женский"
+		"es"		"Mujer"
+		"chi"		"女声"
 	}
 }
