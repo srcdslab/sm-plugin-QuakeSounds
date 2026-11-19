@@ -22,7 +22,7 @@ public Plugin myinfo = {
 	name = "Quake Sounds",
 	author = "Spartan_C001, maxime1907, .Rushaway",
 	description = "Plays sounds based on events that happen in game.",
-	version = "4.3.2",
+	version = "4.3.3",
 	url = "http://steamcommunity.com/id/spartan_c001/",
 }
 
