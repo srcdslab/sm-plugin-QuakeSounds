@@ -10,6 +10,12 @@
 		"ru"		"Хедшот от {1}"
 		"es"		"Headshot de {1}"
 		"chi"		"{1} 爆头"
+		"pl"		"{1} Headshot"
+		"tr"		"{1} Kafadan vurdu"
+		"it"		"{1} Headshot"
+		"ua"		"{1} Хедшот"
+		"zho"		"{1} 爆頭"
+		"cze"		"{1} Headshot"
 	}
 	"headshot 1"
 	{
@@ -21,6 +27,12 @@
 		"ru"		"Хедшот от {1}"
 		"es"		"Headshot de {1}"
 		"chi"		"{1} 爆头"
+		"pl"		"{1} Headshot"
+		"tr"		"{1} Kafadan vurdu"
+		"it"		"{1} Headshot"
+		"ua"		"{1} Хедшот"
+		"zho"		"{1} 爆頭"
+		"cze"		"{1} Headshot"
 	}
 	"headshot 3"
 	{
@@ -32,6 +44,12 @@
 		"ru"		"Хет-трик от {1}"
 		"es"		"Hat-trick de {1}"
 		"chi"		"{1} 帽子戏法"
+		"pl"		"{1} Hattrick"
+		"tr"		"{1} Hat-trick"
+		"it"		"{1} Hat-trick"
+		"ua"		"{1} Хет-трик"
+		"zho"		"{1} 帽子戲法"
+		"cze"		"{1} Hattrick"
 	}
 	"headshot 5"
 	{
@@ -43,6 +61,12 @@
 		"ru"		"{1} — охотник за головами"
 		"es"		"{1}, cazador de cabezas"
 		"chi"		"{1} 猎头者"
+		"pl"		"{1} Łowca głów"
+		"tr"		"{1} Kafa Avcısı"
+		"it"		"{1} Cacciatore di teste"
+		"ua"		"{1} Мисливець за головами"
+		"zho"		"{1} 獵頭者"
+		"cze"		"{1} Lovec hlav"
 	}
 	"killsound 4"
 	{
@@ -54,6 +78,12 @@
 		"ru"		"{1} доминирует"
 		"es"		"{1} está dominando"
 		"chi"		"{1} 主宰比赛"
+		"pl"		"{1} dominuje"
+		"tr"		"{1} her yeri eziyor"
+		"it"		"{1} sta dominando"
+		"ua"		"{1} домінує"
+		"zho"		"{1} 主宰比賽"
+		"cze"		"{1} dominuje"
 	}
 	"killsound 6"
 	{
@@ -65,6 +95,12 @@
 		"ru"		"{1} буйствует"
 		"es"		"{1} está arrasando"
 		"chi"		"{1} 暴走了"
+		"pl"		"{1} szaleje"
+		"tr"		"{1} çıldırdı"
+		"it"		"{1} è in piena furia"
+		"ua"		"{1} шаленіє"
+		"zho"		"{1} 暴走了"
+		"cze"		"{1} zuří"
 	}
 	"killsound 8"
 	{
@@ -76,6 +112,12 @@
 		"ru"		"{1} устраивает бойню"
 		"es"		"{1} está en racha asesina"
 		"chi"		"{1} 大杀特杀"
+		"pl"		"{1} ma serię zabójstw"
+		"tr"		"{1} öldürme serisinde"
+		"it"		"{1} è in una serie di uccisioni"
+		"ua"		"{1} на серії вбивств"
+		"zho"		"{1} 正在大殺特殺"
+		"cze"		"{1} má sérii zabití"
 	}
 	"killsound 10"
 	{
@@ -87,6 +129,12 @@
 		"ru"		"{1} делает монстр-килл"
 		"es"		"{1} acaba de lograr una matanza monstruosa"
 		"chi"		"{1} 妖怪般的杀戮"
+		"pl"		"{1} zaliczył Monster Kill"
+		"tr"		"{1} Canavar Öldürme yaptı"
+		"it"		"{1} ha fatto un Monster Kill"
+		"ua"		"{1} зробив Monster Kill"
+		"zho"		"{1} 完成了怪物擊殺"
+		"cze"		"{1} získal Monster Kill"
 	}
 	"killsound 14"
 	{
@@ -98,6 +146,12 @@
 		"ru"		"{1} не остановить"
 		"es"		"{1} es imparable"
 		"chi"		"{1} 无人能挡"
+		"pl"		"{1} jest nie do zatrzymania"
+		"tr"		"{1} durdurulamıyor"
+		"it"		"{1} è inarrestabile"
+		"ua"		"{1} нестримний"
+		"zho"		"{1} 勢不可擋"
+		"cze"		"{1} je nezastavitelný"
 	}
 	"killsound 16"
 	{
@@ -109,6 +163,12 @@
 		"ru"		"Ультракилл от {1}"
 		"es"		"Ultrakill de {1}"
 		"chi"		"{1} 疯狂杀戮"
+		"pl"		"{1} Ultrakill"
+		"tr"		"{1} Ultrakill"
+		"it"		"{1} Ultrakill"
+		"ua"		"{1} Ultrakill"
+		"zho"		"{1} 極限擊殺"
+		"cze"		"{1} Ultrakill"
 	}
 	"killsound 18"
 	{
@@ -120,6 +180,12 @@
 		"ru"		"{1} подобен богу"
 		"es"		"{1} es como un dios"
 		"chi"		"{1} 如同神一般"
+		"pl"		"{1} jest jak bóg"
+		"tr"		"{1} tanrı gibi"
+		"it"		"{1} è un dio"
+		"ua"		"{1} як бог"
+		"zho"		"{1} 如同神一般"
+		"cze"		"{1} je jako bůh"
 	}
 	"killsound 20"
 	{
@@ -131,6 +197,12 @@
 		"ru"		"{1} творит безумие"
 		"es"		"{1} es una bestia"
 		"chi"		"{1} 变态杀戮"
+		"pl"		"{1} jest chory z wrażenia"
+		"tr"		"{1} çok çılgın"
+		"it"		"{1} è fuori di testa"
+		"ua"		"{1} неймовірно крутий"
+		"zho"		"{1} 猖狂至極"
+		"cze"		"{1} je na zabití"
 	}
 	"killsound 22"
 	{
@@ -142,6 +214,12 @@
 		"ru"		"{1} впечатляет"
 		"es"		"{1} es impresionante"
 		"chi"		"{1} 令人惊叹"
+		"pl"		"{1} robi wrażenie"
+		"tr"		"{1} etkileyici"
+		"it"		"{1} è impressionante"
+		"ua"		"{1} вражає"
+		"zho"		"{1} 令人印象深刻"
+		"cze"		"{1} je impozantní"
 	}
 	"killsound 24"
 	{
@@ -153,6 +231,12 @@
 		"ru"		"Безумное убийство от {1}"
 		"es"		"Asesinato demencial por {1}"
 		"chi"		"{1} 的离谱击杀"
+		"pl"		"Absurdalne zabójstwo od {1}"
+		"tr"		"{1} tarafından inanılmaz öldürme"
+		"it"		"Uccisione assurda di {1}"
+		"ua"		"Абсурдне вбивство від {1}"
+		"zho"		"{1} 的荒謬擊殺"
+		"cze"		"Šílené zabití od {1}"
 	}
 	"killsound 26"
 	{
@@ -164,6 +248,12 @@
 		"ru"		"ОХРЕНЕТЬ, {1} просто зверь"
 		"es"		"MADRE MÍA, {1} es un crack"
 		"chi"		"我的天，{1} 超越神了"
+		"pl"		"O RANY, {1} to potwór"
+		"tr"		"VAY CANINA, {1} efsane"
+		"it"		"PORCA MISERIA, {1} è un mostro"
+		"ua"		"НІЧОГО СОБІ, {1} — монстр"
+		"zho"		"天啊，{1} 太強了"
+		"cze"		"PROBOHA, {1} je zabiják"
 	}
 	"combo 2"
 	{
@@ -175,6 +265,12 @@
 		"ru"		"{1} делает двойное убийство"
 		"es"		"{1} acaba de conseguir un doble asesinato"
 		"chi"		"{1} 双杀"
+		"pl"		"{1} zrobił Double Kill"
+		"tr"		"{1} Çifte Öldürme yaptı"
+		"it"		"{1} ha fatto un Double Kill"
+		"ua"		"{1} зробив Double Kill"
+		"zho"		"{1} 完成了雙殺"
+		"cze"		"{1} předvedl Double Kill"
 	}
 	"combo 3"
 	{
@@ -186,6 +282,12 @@
 		"ru"		"{1} делает тройное убийство"
 		"es"		"{1} acaba de conseguir un triple asesinato"
 		"chi"		"{1} 三杀"
+		"pl"		"{1} zrobił Triple Kill"
+		"tr"		"{1} Üçlü Öldürme yaptı"
+		"it"		"{1} ha fatto un Triple Kill"
+		"ua"		"{1} зробив Triple Kill"
+		"zho"		"{1} 完成了三殺"
+		"cze"		"{1} předvedl Triple Kill"
 	}
 	"combo 4"
 	{
@@ -197,6 +299,12 @@
 		"ru"		"{1} делает комбо из четырёх"
 		"es"		"{1} acaba de conseguir un combo cuádruple"
 		"chi"		"{1} 四连杀"
+		"pl"		"{1} zrobił poczwórne combo"
+		"tr"		"{1} Dörtlü Kombo yaptı"
+		"it"		"{1} ha fatto un Quadruple Combo"
+		"ua"		"{1} зробив четверне комбо"
+		"zho"		"{1} 完成了四連殺"
+		"cze"		"{1} předvedl čtyřnásobné combo"
 	}
 	"combo 5"
 	{
@@ -208,6 +316,12 @@
 		"ru"		"{1} — комбо-маньяк"
 		"es"		"{1} es un adicto a los combos"
 		"chi"		"{1} 连杀狂魔"
+		"pl"		"{1} to maniak combo"
+		"tr"		"{1} kombo manyağı"
+		"it"		"{1} è un maniaco delle combo"
+		"ua"		"{1} — маніяк комбо"
+		"zho"		"{1} 是連殺狂人"
+		"cze"		"{1} je maniak na komba"
 	} 
 	"first blood"
 	{
@@ -219,6 +333,12 @@
 		"ru"		"{1} пролил первую кровь!"
 		"es"		"¡{1} derramó la primera sangre!"
 		"chi"		"{1} 拿下第一滴血！"
+		"pl"		"{1} przelał pierwszą krew!"
+		"tr"		"{1} ilk kanı akıttı!"
+		"it"		"{1} ha versato il primo sangue!"
+		"ua"		"{1} пролив першу кров!"
+		"zho"		"{1} 拿下了第一滴血！"
+		"cze"		"{1} prolil první krev!"
 	}	
 	"grenade"
 	{
@@ -230,6 +350,12 @@
 		"ru"		"{1} подорвал {2} гранатой"
 		"es"		"{1} hizo volar a {2} con una granada"
 		"chi"		"{1} 用手雷炸死了 {2}"
+		"pl"		"{1} wysadził {2} granatem"
+		"tr"		"{1}, {2} oyuncusunu el bombasıyla patlattı"
+		"it"		"{1} ha fatto esplodere {2} con una granata"
+		"ua"		"{1} підірвав {2} гранатою"
+		"zho"		"{1} 用手榴彈炸死了 {2}"
+		"cze"		"{1} odpálil {2} granátem"
 	}
 	"selfkill"
 	{
@@ -241,6 +367,12 @@
 		"ru"		"{1} опозорился"
 		"es"		"{1} se humilló a sí mismo"
 		"chi"		"{1} 自取其辱"
+		"pl"		"{1} upokorzył sam siebie"
+		"tr"		"{1} kendini rezil etti"
+		"it"		"{1} si è umiliato da solo"
+		"ua"		"{1} принизив сам себе"
+		"zho"		"{1} 羞辱了自己"
+		"cze"		"{1} ponížil sám sebe"
 	}
 	"round play"
 	{
@@ -251,6 +383,12 @@
 		"ru"		"Играем!"
 		"es"		"¡A jugar!"
 		"chi"		"开始！"
+		"pl"		"Graj"
+		"tr"		"Oyna"
+		"it"		"Gioca"
+		"ua"		"Грати"
+		"zho"		"開始"
+		"cze"		"Hrát"
 	}
 	"knife"
 	{
@@ -262,6 +400,12 @@
 		"ru"		"{1} опозорил {2} ножом"
 		"es"		"{2} fue humillado con el cuchillo por {1}"
 		"chi"		"{2} 被 {1} 用刀羞辱了"
+		"pl"		"{1} upokorzył {2} nożem"
+		"tr"		"{2}, {1} tarafından bıçakla rezil edildi"
+		"it"		"{2} è stato umiliato col coltello da {1}"
+		"ua"		"{1} принизив {2} ножем"
+		"zho"		"{2} 被 {1} 用刀羞辱了"
+		"cze"		"{1} ponížil {2} nožem"
 	}
 	"teamkill"
 	{
@@ -273,6 +417,12 @@
 		"ru"		"{1} убил своего союзника {2}"
 		"es"		"{1} acaba de matar a su compañero de equipo {2}"
 		"chi"		"{1} 刚刚击杀了队友 {2}"
+		"pl"		"{1} zabił swojego kolegę {2}"
+		"tr"		"{1} takım arkadaşı {2} oyuncusunu öldürdü"
+		"it"		"{1} ha ucciso il compagno di squadra {2}"
+		"ua"		"{1} вбив свого напарника {2}"
+		"zho"		"{1} 誤殺了隊友 {2}"
+		"cze"		"{1} zabil svého spoluhráče {2}"
 	}
 	"announce message"
 	{
@@ -283,6 +433,12 @@
 		"ru"		"Введите !quake или /quake, чтобы настроить звуки Quake"
 		"es"		"Escribe !quake o /quake para configurar tus sonidos Quake"
 		"chi"		"输入 !quake 或 /quake 设置你的 Quake 音效"
+		"pl"		"Napisz !quake lub /quake, aby ustawić dźwięki quake"
+		"tr"		"Quake seslerinin tercihlerini ayarlamak için !quake veya /quake yaz"
+		"it"		"Scrivi !quake o /quake per impostare le preferenze dei suoni quake"
+		"ua"		"Напиши !quake або /quake, щоб налаштувати звуки quake"
+		"zho"		"輸入 !quake 或 /quake 來設定 quake 音效偏好"
+		"cze"		"Napiš !quake nebo /quake pro nastavení předvoleb zvuků quake"
 	}
 	"quake menu"
 	{
@@ -293,6 +449,12 @@
 		"ru"		"Меню Quake"
 		"es"		"Menú Quake"
 		"chi"		"Quake 菜单"
+		"pl"		"Menu Quake"
+		"tr"		"Quake Menüsü"
+		"it"		"Menu Quake"
+		"ua"		"Меню Quake"
+		"zho"		"Quake 選單"
+		"cze"		"Quake menu"
 	}
 	"enable text"
 	{
@@ -303,6 +465,12 @@
 		"ru"		"Включить показ текста"
 		"es"		"Activar texto en pantalla"
 		"chi"		"启用文字显示"
+		"pl"		"Włącz wyświetlanie tekstu"
+		"tr"		"Metin gösterimini aç"
+		"it"		"Attiva testo"
+		"ua"		"Увімкнути текст"
+		"zho"		"啟用文字顯示"
+		"cze"		"Zapnout zobrazení textu"
 	}
 	"disable text"
 	{
@@ -313,6 +481,12 @@
 		"ru"		"Отключить показ текста"
 		"es"		"Desactivar texto en pantalla"
 		"chi"		"禁用文字显示"
+		"pl"		"Wyłącz wyświetlanie tekstu"
+		"tr"		"Metin gösterimini kapat"
+		"it"		"Disattiva testo"
+		"ua"		"Вимкнути текст"
+		"zho"		"停用文字顯示"
+		"cze"		"Vypnout zobrazení textu"
 	}
 	"sounds enable"
 	{
@@ -323,6 +497,12 @@
 		"ru"		"Включить звуки"
 		"es"		"Activar sonidos"
 		"chi"		"启用音效"
+		"pl"		"Włącz dźwięki"
+		"tr"		"Sesleri aç"
+		"it"		"Attiva suoni"
+		"ua"		"Увімкнути звуки"
+		"zho"		"啟用音效"
+		"cze"		"Zapnout zvuky"
 	}
 	"sounds disable"
 	{
@@ -333,6 +513,12 @@
 		"ru"		"Отключить звуки"
 		"es"		"Desactivar sonidos"
 		"chi"		"禁用音效"
+		"pl"		"Wyłącz dźwięki"
+		"tr"		"Sesleri kapat"
+		"it"		"Disattiva suoni"
+		"ua"		"Вимкнути звуки"
+		"zho"		"停用音效"
+		"cze"		"Vypnout zvuky"
 	}
 	"sound pack"
 	{
@@ -343,6 +529,12 @@
 		"ru"		"Набор звуков"
 		"es"		"Paquete de sonidos"
 		"chi"		"音效包"
+		"pl"		"Paczka dźwięków"
+		"tr"		"Ses paketi"
+		"it"		"Pacchetto suoni"
+		"ua"		"Набір звуків"
+		"zho"		"音效包"
+		"cze"		"Zvukový balíček"
 	}
 	"male"
 	{
@@ -353,6 +545,12 @@
 		"ru"		"Мужской"
 		"es"		"Hombre"
 		"chi"		"男声"
+		"pl"		"Mężczyzna"
+		"tr"		"Erkek"
+		"it"		"Uomo"
+		"ua"		"Чоловік"
+		"zho"		"男性"
+		"cze"		"Muž"
 	}
 	"female"
 	{
@@ -363,5 +561,11 @@
 		"ru"		"Женский"
 		"es"		"Mujer"
 		"chi"		"女声"
+		"pl"		"Kobieta"
+		"tr"		"Kadın"
+		"it"		"Donna"
+		"ua"		"Жінка"
+		"zho"		"女性"
+		"cze"		"Žena"
 	}
 }
